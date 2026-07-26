@@ -1,6 +1,6 @@
 "use client";
 
-import { useFirestoreDoc } from "@/lib/hooks";
+import { useLiveApi } from "@/lib/hooks";
 import { StatCard } from "@/components/UserActivityDashboard";
 import { LoadingState, ErrorState } from "@/components/DataState";
 
@@ -10,14 +10,14 @@ import { LoadingState, ErrorState } from "@/components/DataState";
 // fields on write; this component only ever reads. Adjust the field/
 // collection names below to match your actual schema.
 const METRIC_CARDS = [
-  { key: "totalLogin", label: "Total Login", accent: "blue", icon: "🔑" },
-  { key: "totalAttempt", label: "Total Attempt", accent: "violet", icon: "🎯" },
-  { key: "totalFail", label: "Total Fail", accent: "rose", icon: "❌" },
+  { key: "totalLogins", label: "Total Login", accent: "blue", icon: "🔑" },
+  { key: "totalAttempts", label: "Total Attempt", accent: "violet", icon: "🎯" },
+  { key: "totalFailed", label: "Total Fail", accent: "rose", icon: "❌" },
   { key: "totalInReview", label: "Total In Review", accent: "amber", icon: "⏳" },
 ];
 
 export default function MetricsOverview() {
-  const { data: metrics, loading, error } = useFirestoreDoc("metrics", "summary");
+  const { data: metrics, loading, error } = useLiveApi("/api/admin/stats", 5000);
 
   if (error) return <ErrorState message={error} />;
   if (loading || !metrics) return <LoadingState label="মেট্রিক্স লোড হচ্ছে..." />;

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useFirestoreDoc } from "@/lib/hooks";
+import { useLiveApi } from "@/lib/hooks";
 import StatusBadge from "@/components/StatusBadge";
 
 // Real-time replacement for setInterval-based status polling. Assumes each
@@ -12,7 +12,7 @@ import StatusBadge from "@/components/StatusBadge";
 export default function LiveStatusTracker() {
   const [code, setCode] = useState("");
   const [activeCode, setActiveCode] = useState(null);
-  const { data: result, loading, error } = useFirestoreDoc("submissions", activeCode);
+  const { data: result, loading, error } = useLiveApi(activeCode ? `/api/track/${activeCode}` : null, 2500);
 
   function handleTrack(e) {
     e.preventDefault();

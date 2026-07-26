@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { withAuth } from "@/lib/rbac";
 import { trackCodeSchema } from "@/lib/validation";
-import { normalizeCode, resolveTrackingStatus, publishTrackingStatus } from "@/lib/tracking";
+import { normalizeCode, resolveTrackingStatus } from "@/lib/tracking";
 import { writeAuditLog } from "@/lib/audit";
 
 export const POST = withAuth(async (request, { user }) => {
@@ -29,7 +29,7 @@ export const POST = withAuth(async (request, { user }) => {
 
   const { status, stage } = resolveTrackingStatus(trackingCode);
   const updatedAt = new Date().toISOString();
-  await publishTrackingStatus(code, { status, stage, updatedAt });
+
 
   return NextResponse.json({ code, status, stage, updatedAt });
 });
