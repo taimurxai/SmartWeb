@@ -1,27 +1,7 @@
-// Run directly by Node (via `prisma db seed`), not bundled by Next.js, so it
-// needs the generated client's real filename + extension (Next's webpack
-// resolves extensionless "./client" for us elsewhere; plain Node doesn't).
-import { PrismaClient } from "../lib/generated/prisma/client.ts";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { adminAuth } from "../lib/firebase-admin.js";
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
-const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
-
-// Idempotent: re-running the seed shouldn't fail on "email already exists" —
-// reuse the existing Firebase account (and re-sync its password to the demo
-// value) instead of erroring out.
-async function upsertFirebaseUser(email, password) {
-  try {
-    const record = await adminAuth.createUser({ email, password });
-    return record.uid;
-  } catch (err) {
-    if (err.code !== "auth/email-already-exists") throw err;
-    const existing = await adminAuth.getUserByEmail(email);
-    await adminAuth.updateUser(existing.uid, { password });
-    return existing.uid;
-  }
-}
+const prisma = new PrismaClient();
 
 async function main() {
   const users = [
@@ -32,20 +12,15 @@ async function main() {
   ];
 
   for (const u of users) {
-    const firebaseUid = await upsertFirebaseUser(u.email, u.password);
+    const hashedPassword = await bcrypt.hash(u.password, 10);
     await prisma.user.upsert({
       where: { email: u.email },
-      update: {},
-      create: { name: u.name, email: u.email, firebaseUid, role: u.role },
+      update: { password: hashedPassword, role: u.role },
+      create: { name: u.name, email: u.email, password: hashedPassword, role: u.role },
     });
   }
 
-  // Demo codes matching the codes documented in README. Only the two fixed
-  // outcomes are pre-seeded; the "in review, progresses live" demo code
-  // (1234567890123456) is intentionally NOT pre-created here — its live
-  // progression is timed from first submission (see lib/tracking.js), so
-  // pre-seeding it would make it look permanently resolved by the time
-  // anyone actually tries the demo.
+  // Demo tracking codes
   await prisma.trackingCode.upsert({
     where: { code: "9876543210987654" },
     update: {},
