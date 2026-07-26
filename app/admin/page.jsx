@@ -97,18 +97,18 @@ export default function AdminDashboard() {
           <span className="text-lg font-semibold text-white">Trackr Admin</span>
         </div>
 
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 space-y-2">
           {NAV.map((item) => (
             <button
               key={item.key}
               onClick={() => handleNav(item.key)}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+              className={`group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
                 tab === item.key
-                  ? "bg-violet-500/15 text-violet-200 ring-1 ring-violet-500/30"
-                  : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                  ? "bg-gradient-to-r from-violet-500/20 to-blue-500/10 text-violet-200 ring-1 ring-violet-500/30 shadow-[inset_2px_0_0_0_#8b5cf6]"
+                  : "text-slate-400 hover:bg-white/5 hover:text-slate-200 hover:translate-x-1"
               }`}
             >
-              <span className="text-base">{item.icon}</span>
+              <span className={`text-base transition-transform ${tab === item.key ? "scale-110" : "group-hover:scale-110"}`}>{item.icon}</span>
               {item.label}
             </button>
           ))}
@@ -208,20 +208,29 @@ function SummaryCard({ label, value, accent, icon, hint, onClick }) {
     rose: "from-rose-500/20 to-rose-500/5 text-rose-300",
     amber: "from-amber-500/20 to-amber-500/5 text-amber-300",
   }[accent];
+  
+  const hoverRing = {
+    violet: "group-hover:border-violet-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(139,92,246,0.4)]",
+    blue: "group-hover:border-blue-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.4)]",
+    emerald: "group-hover:border-emerald-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)]",
+    rose: "group-hover:border-rose-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(244,63,94,0.4)]",
+    amber: "group-hover:border-amber-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(245,158,11,0.4)]",
+  }[accent];
+
   return (
     <button
       onClick={onClick}
-      className="group text-left rounded-2xl border border-white/10 bg-navy-900/60 p-6 shadow-xl backdrop-blur-xl transition hover:-translate-y-0.5 hover:border-violet-500/40 hover:shadow-glow"
+      className={`group text-left rounded-2xl border border-white/10 bg-navy-900/60 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${hoverRing}`}
     >
       <div className="flex items-start justify-between">
-        <div className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${ring}`}>
-          <span className="text-lg">{icon}</span>
+        <div className={`grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br transition-transform group-hover:scale-110 group-hover:rotate-3 ${ring}`}>
+          <span className="text-xl">{icon}</span>
         </div>
-        <span className="text-slate-600 transition group-hover:text-violet-300">↗</span>
+        <span className="text-slate-600 transition-colors group-hover:text-white">↗</span>
       </div>
-      <p className="mt-4 text-sm text-slate-400">{label}</p>
-      <p className="mt-1 text-3xl font-bold text-white">{value.toLocaleString("en-US")}</p>
-      <p className="mt-1 text-xs text-slate-500">{hint}</p>
+      <p className="mt-5 text-sm font-medium text-slate-400 group-hover:text-slate-300">{label}</p>
+      <p className="mt-1 text-4xl font-bold text-white tracking-tight">{value.toLocaleString("en-US")}</p>
+      <p className="mt-2 text-xs text-slate-500">{hint}</p>
     </button>
   );
 }
@@ -371,10 +380,11 @@ function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
 
           <ul className="divide-y divide-white/5">
             {data.rows.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 transition hover:bg-white/[0.02]">
+              <li key={r.id} className="group flex flex-wrap items-center justify-between gap-3 px-6 py-4 transition-all duration-300 hover:bg-white/[0.03] relative">
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-violet-500 opacity-0 transition-opacity group-hover:opacity-100 rounded-r-md"></div>
                 <UserChip userId={r.userId} userName={r.userName} email={r.email} onOpenUser={onOpenUser} />
                 <div className="flex items-center gap-4">
-                  <div className="text-right">
+                  <div className="text-right transition-transform group-hover:-translate-x-1">
                     <p className="text-sm text-white">{fmtDate(r.time)}</p>
                     <p className="text-xs text-slate-500">
                       {new Date(r.time).toLocaleTimeString("en-GB")}
@@ -382,13 +392,13 @@ function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
                     </p>
                   </div>
                   {isLogin ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-3 py-1.5 text-xs font-medium text-blue-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
                       Login
                     </span>
                   ) : (
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[r.status].cls}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_STYLE[r.status].dot}`} />
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${STATUS_STYLE[r.status].cls}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_STYLE[r.status].dot} animate-pulse`} />
                       {STATUS_STYLE[r.status].label}
                     </span>
                   )}
@@ -519,13 +529,14 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                   const self = u.id === currentUserId;
                   const busy = busyId === u.id;
                   return (
-                    <tr key={u.id} className="border-t border-white/5 transition hover:bg-white/[0.02]">
+                    <tr key={u.id} className="group border-t border-white/5 transition-all duration-300 hover:bg-white/[0.03] relative">
                       <td className="px-6 py-4">
-                        <button onClick={() => onOpen(u)} className="group flex items-center gap-3 text-left">
-                          <div className="grid h-8 w-8 place-items-center rounded-full bg-navy-700 text-xs font-semibold text-violet-300">
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-violet-500 opacity-0 transition-opacity group-hover:opacity-100 rounded-r-md"></div>
+                        <button onClick={() => onOpen(u)} className="flex items-center gap-3 text-left">
+                          <div className="grid h-9 w-9 place-items-center rounded-full bg-navy-700 border border-white/5 text-xs font-bold text-violet-300 transition-transform group-hover:scale-110">
                             {u.name?.[0]?.toUpperCase()}
                           </div>
-                          <span className="font-medium text-white underline-offset-4 group-hover:text-violet-300 group-hover:underline">
+                          <span className="font-semibold text-white transition-colors group-hover:text-violet-300">
                             {u.name}
                           </span>
                         </button>

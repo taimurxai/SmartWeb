@@ -107,9 +107,9 @@ export default function UserDashboard() {
         {/* Code input */}
         <form
           onSubmit={handleTrack}
-          className="rounded-2xl border border-white/10 bg-navy-900/60 p-6 shadow-xl backdrop-blur-xl"
+          className="rounded-2xl border border-white/10 bg-navy-900/60 p-8 shadow-xl backdrop-blur-xl transition-all hover:border-violet-500/30"
         >
-          <label className="mb-2 block text-sm font-medium text-slate-300" htmlFor="track-code">
+          <label className="mb-3 block text-sm font-semibold text-slate-300" htmlFor="track-code">
             URL বা ১৫/১৬ ডিজিটের কোড দিন
           </label>
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -118,12 +118,12 @@ export default function UserDashboard() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="e.g. 1234 5678 9012 3456"
-              className="flex-1 rounded-xl border border-white/10 bg-navy-950/60 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
+              className="flex-1 rounded-xl border border-white/10 bg-navy-950/60 px-5 py-3.5 text-sm text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-violet-500/60 focus:bg-navy-900/80 focus:ring-4 focus:ring-violet-500/10 focus:shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)]"
             />
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-8 py-3.5 text-sm font-bold tracking-wide text-white shadow-glow transition-all active:scale-95 hover:from-violet-500 hover:to-blue-500 hover:shadow-glow-lg disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "যাচাই হচ্ছে..." : "Verify & Track"}
             </button>
@@ -164,11 +164,11 @@ export default function UserDashboard() {
                       <div
                         className={`h-2 flex-1 rounded-full transition-colors ${
                           failed
-                            ? "bg-rose-500/60"
+                            ? "bg-rose-500/60 shadow-[0_0_10px_-2px_rgba(244,63,94,0.5)]"
                             : done
-                            ? "bg-gradient-to-r from-violet-500 to-blue-500"
+                            ? "bg-gradient-to-r from-violet-500 to-blue-500 shadow-[0_0_10px_-2px_rgba(139,92,246,0.5)]"
                             : "bg-navy-700"
-                        }`}
+                        } ${result.status === "IN_REVIEW" && result.stage === step ? "animate-pulse" : ""}`}
                       />
                     </div>
                   );

@@ -52,10 +52,10 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-white/10 bg-navy-900/60 p-7 shadow-2xl backdrop-blur-xl"
+          className="group rounded-2xl border border-white/10 bg-navy-900/60 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 hover:border-violet-500/20 hover:shadow-glow-lg"
         >
           <label className="mb-4 block" htmlFor="login-email">
-            <span className="mb-1.5 block text-sm font-medium text-slate-300">Email</span>
+            <span className="mb-1.5 block text-sm font-semibold text-slate-300">Email</span>
             <input
               id="login-email"
               type="email"
@@ -64,12 +64,12 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
-              className="w-full rounded-xl border border-white/10 bg-navy-950/60 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
+              className="w-full rounded-xl border border-white/10 bg-navy-950/60 px-5 py-3.5 text-sm text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-violet-500/60 focus:bg-navy-900/80 focus:ring-4 focus:ring-violet-500/10 focus:shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)]"
             />
           </label>
 
-          <label className="mb-5 block" htmlFor="login-password">
-            <span className="mb-1.5 block text-sm font-medium text-slate-300">Password</span>
+          <label className="mb-6 block" htmlFor="login-password">
+            <span className="mb-1.5 block text-sm font-semibold text-slate-300">Password</span>
             <input
               id="login-password"
               type="password"
@@ -78,23 +78,24 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full rounded-xl border border-white/10 bg-navy-950/60 px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
+              className="w-full rounded-xl border border-white/10 bg-navy-950/60 px-5 py-3.5 text-sm text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-violet-500/60 focus:bg-navy-900/80 focus:ring-4 focus:ring-violet-500/10 focus:shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)]"
             />
           </label>
 
           {error && (
-            <p
+            <div
               role="alert"
-              className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300"
+              className="mb-6 flex items-center gap-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-300 shadow-inner"
             >
-              {error}
-            </p>
+              <span className="text-lg">⚠️</span>
+              <p>{error}</p>
+            </div>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-3.5 text-sm font-bold tracking-wide text-white shadow-glow transition-all active:scale-95 hover:from-violet-500 hover:to-blue-500 hover:shadow-glow-lg disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Login"}
           </button>
