@@ -1,6 +1,6 @@
 "use client";
 
-import { STATUS_META } from "@/lib/store";
+import { STATUS_META } from "@/lib/statusMeta";
 
 const styles = {
   amber: "bg-amber-500/10 text-amber-300 border-amber-500/30",
@@ -9,8 +9,8 @@ const styles = {
 };
 
 export default function StatusBadge({ status, stage }) {
-  const meta = STATUS_META[status] || STATUS_META.in_review;
-  const label = status === "in_review" && stage ? `${meta.label} ${stage}` : meta.label;
+  const meta = STATUS_META[status] || STATUS_META.IN_REVIEW;
+  const label = status === "IN_REVIEW" && stage ? `${meta.label} ${stage}` : meta.label;
   return (
     <span
       className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-semibold ${styles[meta.color]}`}

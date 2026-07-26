@@ -1,8 +1,8 @@
 import "./globals.css";
-import { StoreProvider } from "@/lib/store";
+import { AuthProvider } from "@/lib/auth-context";
 
 export const metadata = {
-  title: "Tracking Dashboard",
+  title: "Trackr",
   description: "Dark theme tracking dashboard — login, user & admin panels",
 };
 
@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="bn">
       <body className="min-h-screen font-sans antialiased">
-        <StoreProvider>{children}</StoreProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

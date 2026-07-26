@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
+import { useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
-  const { login, session, ready, consumeFrozenNotice } = useStore();
+  const { login, user, ready, consumeNotice } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,28 +13,30 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (ready && session) {
-      router.replace(session.role === "Admin" ? "/admin" : "/dashboard");
+    if (ready && user) {
+      router.replace(user.role === "ADMIN" ? "/admin" : "/dashboard");
     }
-  }, [ready, session, router]);
+  }, [ready, user, router]);
 
   useEffect(() => {
-    if (ready && consumeFrozenNotice()) {
-      setError("আপনার অ্যাকাউন্টটি ফ্রিজ করা হয়েছে। এডমিনের সাথে যোগাযোগ করুন।");
-    }
+    if (!ready) return;
+    const notice = consumeNotice();
+    if (notice) setError(notice);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const res = login(email, password);
-    setLoading(false);
-    if (!res.ok) {
-      setError(res.error);
-      return;
+    try {
+      const loggedIn = await login(email, password);
+      router.replace(loggedIn.role === "ADMIN" ? "/admin" : "/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    router.replace(res.user.role === "Admin" ? "/admin" : "/dashboard");
   }
 
   return (
@@ -52,11 +54,13 @@ export default function LoginPage() {
           onSubmit={handleSubmit}
           className="rounded-2xl border border-white/10 bg-navy-900/60 p-7 shadow-2xl backdrop-blur-xl"
         >
-          <label className="mb-4 block">
+          <label className="mb-4 block" htmlFor="login-email">
             <span className="mb-1.5 block text-sm font-medium text-slate-300">Email</span>
             <input
+              id="login-email"
               type="email"
               required
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
@@ -64,11 +68,13 @@ export default function LoginPage() {
             />
           </label>
 
-          <label className="mb-5 block">
+          <label className="mb-5 block" htmlFor="login-password">
             <span className="mb-1.5 block text-sm font-medium text-slate-300">Password</span>
             <input
+              id="login-password"
               type="password"
               required
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -77,7 +83,10 @@ export default function LoginPage() {
           </label>
 
           {error && (
-            <p className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+            <p
+              role="alert"
+              className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300"
+            >
               {error}
             </p>
           )}
@@ -85,7 +94,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500 disabled:opacity-60"
+            className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-3 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? "Signing in..." : "Login"}
           </button>

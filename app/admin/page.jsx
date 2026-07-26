@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useStore, sumHistory } from "@/lib/store";
+import { useAuth, isAuthError } from "@/lib/auth-context";
+import { api } from "@/lib/api";
+import { sumHistory } from "@/lib/historyUtils";
+import { useDebouncedValue } from "@/lib/hooks";
 import UserActivityDashboard, { InfoPanel, InfoRow } from "@/components/UserActivityDashboard";
+import { LoadingState, EmptyState, ErrorState } from "@/components/DataState";
+import Pager from "@/components/Pager";
+import SearchInput from "@/components/SearchInput";
+import MetricsOverview from "@/components/MetricsOverview";
 
 const NAV = [
   { key: "overview", label: "Dashboard Overview", icon: "▤" },
@@ -12,67 +19,51 @@ const NAV = [
 ];
 
 export default function AdminDashboard() {
-  const { session, ready, users, logs, addUser, deleteUser, updateUser, freezeUser, unfreezeUser, logout } =
-    useStore();
+  const { user, ready, logout, forceLogout } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState("overview");
   const [modal, setModal] = useState(null); // { mode: 'add'|'edit', user }
-  const [selectedId, setSelectedId] = useState(null); // individual user dashboard
-  const [recordView, setRecordView] = useState(null); // 'logins'|'attempts'|'success'|'failed'|'inReview'
+  const [selectedId, setSelectedId] = useState(null);
+  const [recordView, setRecordView] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!ready) return;
-    if (!session) router.replace("/");
-    else if (session.role !== "Admin") router.replace("/dashboard");
-  }, [ready, session, router]);
+    if (!user) router.replace("/");
+    else if (user.role !== "ADMIN") router.replace("/dashboard");
+  }, [ready, user, router]);
 
-  // Global totals derived from every user's date-wise history. These are
-  // platform-wide numbers and are kept completely separate from the per-user
-  // figures shown inside UserDetail.
-  const summary = useMemo(() => {
-    return users.reduce(
-      (acc, u) => {
-        const t = sumHistory(u.history);
-        acc.totalUsers += 1;
-        acc.totalLogins += t.logins;
-        acc.totalAttempts += t.attempts;
-        acc.totalSuccess += t.success;
-        acc.totalFailed += t.failed;
-        acc.totalInReview += t.inReview;
-        return acc;
-      },
-      {
-        totalUsers: 0,
-        totalLogins: 0,
-        totalAttempts: 0,
-        totalSuccess: 0,
-        totalFailed: 0,
-        totalInReview: 0,
+  // Shared by every section below: if a call comes back 401/403 (session
+  // expired, or this admin got frozen in another tab), bounce to login
+  // instead of rendering a confusing error in place.
+  const handleApiError = useCallback(
+    (err) => {
+      if (isAuthError(err)) {
+        forceLogout("সেশন শেষ হয়ে গেছে। আবার লগইন করুন।");
+        return true;
       }
-    );
-  }, [users]);
-
-  const selectedUser = useMemo(
-    () => users.find((u) => u.id === selectedId) || null,
-    [users, selectedId]
+      return false;
+    },
+    [forceLogout]
   );
 
-  if (!ready || !session || session.role !== "Admin") return null;
+  if (!ready || !user || user.role !== "ADMIN") return null;
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     router.replace("/");
   }
 
-  function goToUsers() {
+  function resetDrill() {
     setSelectedId(null);
     setRecordView(null);
-    setTab("users");
   }
 
-  // A summary card was clicked. Total Users opens the full user list; every
-  // other card opens its own dedicated, filtered record view — no two cards
-  // ever land on the same screen.
+  function handleNav(key) {
+    resetDrill();
+    setTab(key);
+  }
+
   function handleCard(type) {
     setSelectedId(null);
     if (type === "users") {
@@ -85,10 +76,15 @@ export default function AdminDashboard() {
   }
 
   function backToOverview() {
-    setSelectedId(null);
-    setRecordView(null);
+    resetDrill();
     setTab("overview");
   }
+
+  function bump() {
+    setRefreshKey((k) => k + 1);
+  }
+
+  const selectedUserView = Boolean(selectedId);
 
   return (
     <div className="flex min-h-screen">
@@ -105,11 +101,7 @@ export default function AdminDashboard() {
           {NAV.map((item) => (
             <button
               key={item.key}
-              onClick={() => {
-                setSelectedId(null);
-                setRecordView(null);
-                setTab(item.key);
-              }}
+              onClick={() => handleNav(item.key)}
               className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                 tab === item.key
                   ? "bg-violet-500/15 text-violet-200 ring-1 ring-violet-500/30"
@@ -137,11 +129,7 @@ export default function AdminDashboard() {
           {NAV.map((item) => (
             <button
               key={item.key}
-              onClick={() => {
-                setSelectedId(null);
-                setRecordView(null);
-                setTab(item.key);
-              }}
+              onClick={() => handleNav(item.key)}
               className={`rounded-lg px-3 py-2 text-xs font-medium ${
                 tab === item.key ? "bg-violet-500/20 text-violet-200" : "bg-white/5 text-slate-400"
               }`}
@@ -151,56 +139,47 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight text-white">
-            {selectedUser
-              ? selectedUser.name
-              : recordView
-              ? RECORD_META[recordView].title
-              : NAV.find((n) => n.key === tab)?.label}
-          </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            {selectedUser
-              ? selectedUser.email
-              : recordView
-              ? RECORD_META[recordView].subtitle
-              : `স্বাগতম, ${session.name}`}
-          </p>
-        </div>
-
-        {/* Global summary — only on overview, and only when not drilled in */}
-        {tab === "overview" && !selectedUser && !recordView && (
-          <SummarySection summary={summary} onCard={handleCard} />
+        {!selectedUserView && (
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
+              {recordView ? RECORD_META[recordView].title : NAV.find((n) => n.key === tab)?.label}
+            </h1>
+            <p className="mt-1 text-sm text-slate-400">
+              {recordView ? RECORD_META[recordView].subtitle : `স্বাগতম, ${user.name}`}
+            </p>
+          </div>
         )}
 
-        {/* Per-card record drill-down */}
-        {recordView && !selectedUser && (
+        {tab === "overview" && !selectedUserView && !recordView && (
+          <OverviewSection onCard={handleCard} onAuthError={handleApiError} refreshKey={refreshKey} />
+        )}
+
+        {recordView && !selectedUserView && (
           <RecordsView
             type={recordView}
-            users={users}
             onOpenUser={(id) => setSelectedId(id)}
             onBack={backToOverview}
+            onAuthError={handleApiError}
           />
         )}
 
-        {tab === "users" && !selectedUser && !recordView && (
-          <UserTable
-            users={users}
-            currentUserId={session.id}
+        {tab === "users" && !selectedUserView && !recordView && (
+          <UsersSection
+            currentUserId={user.id}
             onOpen={(u) => setSelectedId(u.id)}
             onAdd={() => setModal({ mode: "add", user: null })}
             onEdit={(u) => setModal({ mode: "edit", user: u })}
-            onDelete={deleteUser}
-            onFreeze={freezeUser}
-            onUnfreeze={unfreezeUser}
+            onAuthError={handleApiError}
+            onChanged={bump}
+            refreshKey={refreshKey}
           />
         )}
 
-        {selectedUser && (
-          <UserDetail user={selectedUser} onBack={() => setSelectedId(null)} />
+        {selectedUserView && (
+          <UserDetail userId={selectedId} onBack={() => setSelectedId(null)} onAuthError={handleApiError} />
         )}
 
-        {tab === "logs" && !selectedUser && !recordView && <SystemLog logs={logs} />}
+        {tab === "logs" && !selectedUserView && !recordView && <LogsSection onAuthError={handleApiError} />}
       </main>
 
       {modal && (
@@ -208,18 +187,18 @@ export default function AdminDashboard() {
           mode={modal.mode}
           user={modal.user}
           onClose={() => setModal(null)}
-          onSave={(data) => {
-            if (modal.mode === "add") addUser(data);
-            else updateUser(modal.user.id, data);
+          onSaved={() => {
             setModal(null);
+            bump();
           }}
+          onAuthError={handleApiError}
         />
       )}
     </div>
   );
 }
 
-/* ---------------- Summary section ---------------- */
+/* ---------------- Overview / summary cards ---------------- */
 
 function SummaryCard({ label, value, accent, icon, hint, onClick }) {
   const ring = {
@@ -247,7 +226,28 @@ function SummaryCard({ label, value, accent, icon, hint, onClick }) {
   );
 }
 
-function SummarySection({ summary, onCard }) {
+function OverviewSection({ onCard, onAuthError, refreshKey }) {
+  const [summary, setSummary] = useState(null);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const stats = await api.adminStats();
+      setSummary(stats);
+      setError("");
+    } catch (err) {
+      if (onAuthError(err)) return;
+      setError(err.message);
+    }
+  }, [onAuthError]);
+
+  useEffect(() => {
+    load();
+  }, [load, refreshKey]);
+
+  if (error) return <ErrorState message={error} onRetry={load} />;
+  if (!summary) return <LoadingState />;
+
   const cards = [
     { type: "users", label: "Total Users", value: summary.totalUsers, accent: "violet", icon: "👥", hint: "সম্পূর্ণ ইউজার লিস্ট" },
     { type: "logins", label: "Total Logins", value: summary.totalLogins, accent: "blue", icon: "🔑", hint: "সব লগইন রেকর্ড" },
@@ -256,202 +256,233 @@ function SummarySection({ summary, onCard }) {
     { type: "failed", label: "Total Failed", value: summary.totalFailed, accent: "rose", icon: "❌", hint: "শুধু Failed রেকর্ড" },
     { type: "inReview", label: "Total In Review", value: summary.totalInReview, accent: "amber", icon: "⏳", hint: "শুধু In Review রেকর্ড" },
   ];
+
   return (
-    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-      {cards.map((c) => (
-        <SummaryCard key={c.type} {...c} onClick={() => onCard(c.type)} />
-      ))}
+    <div className="space-y-8">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        {cards.map((c) => (
+          <SummaryCard key={c.type} {...c} onClick={() => onCard(c.type)} />
+        ))}
+      </div>
+
+      {/* Separate from the Prisma-backed cards above — reads metrics/summary
+          straight from Firestore via onSnapshot, so it updates the instant
+          that document changes, with no refresh or polling involved. */}
+      <div>
+        <h2 className="mb-4 text-lg font-semibold text-white">Live Metrics (Firestore Real-time)</h2>
+        <MetricsOverview />
+      </div>
     </div>
   );
 }
 
-/* ---------------- Per-card record views ---------------- */
+/* ---------------- Per-card record views (global, across all users) ---------------- */
 
 const RECORD_META = {
-  logins: { title: "Total Logins", subtitle: "সব ইউজারের লগইন রেকর্ড", accent: "blue", icon: "🔑" },
-  attempts: { title: "Total Attempts", subtitle: "সব ইউজারের সম্পূর্ণ Attempt রেকর্ড", accent: "violet", icon: "🎯" },
-  success: { title: "Total Success", subtitle: "শুধুমাত্র Success রেকর্ড", accent: "emerald", icon: "✅" },
-  failed: { title: "Total Failed", subtitle: "শুধুমাত্র Failed রেকর্ড", accent: "rose", icon: "❌" },
-  inReview: { title: "Total In Review", subtitle: "শুধুমাত্র Review-এ থাকা রেকর্ড", accent: "amber", icon: "⏳" },
+  logins: { title: "Total Logins", subtitle: "সব ইউজারের লগইন রেকর্ড", icon: "🔑" },
+  attempts: { title: "Total Attempts", subtitle: "সব ইউজারের সম্পূর্ণ Attempt রেকর্ড", icon: "🎯" },
+  success: { title: "Total Success", subtitle: "শুধুমাত্র Success রেকর্ড", icon: "✅" },
+  failed: { title: "Total Failed", subtitle: "শুধুমাত্র Failed রেকর্ড", icon: "❌" },
+  inReview: { title: "Total In Review", subtitle: "শুধুমাত্র Review-এ থাকা রেকর্ড", icon: "⏳" },
 };
 
 const STATUS_STYLE = {
-  success: { label: "Account Success", cls: "bg-emerald-500/15 text-emerald-300", dot: "bg-emerald-400" },
-  failed: { label: "Failed", cls: "bg-rose-500/15 text-rose-300", dot: "bg-rose-400" },
-  inReview: { label: "In Review", cls: "bg-amber-500/15 text-amber-300", dot: "bg-amber-400" },
+  SUCCESS: { label: "Account Success", cls: "bg-emerald-500/15 text-emerald-300", dot: "bg-emerald-400" },
+  FAILED: { label: "Failed", cls: "bg-rose-500/15 text-rose-300", dot: "bg-rose-400" },
+  IN_REVIEW: { label: "In Review", cls: "bg-amber-500/15 text-amber-300", dot: "bg-amber-400" },
 };
 
-function fmtDate(dateKey) {
-  return new Date(`${dateKey}T00:00:00Z`).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+function fmtDate(d) {
+  return new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
 }
 
-function recSortKey(r) {
-  return r.time || `${r.date}T00:00:00Z`;
-}
-
-// Expand a user's daily status counters into individual records, borrowing
-// real timestamps from that day's status-update logs where available.
-function statusRecords(users, statusKey) {
-  const needle = statusKey === "inReview" ? "In Review" : statusKey === "success" ? "Success" : "Failed";
-  const rows = [];
-  for (const u of users) {
-    const hist = u.history || {};
-    for (const date of Object.keys(hist)) {
-      const day = hist[date];
-      const count = day?.[statusKey] || 0;
-      if (!count) continue;
-      const times = (day.logs || [])
-        .filter((l) => l.event && l.event.includes(needle))
-        .map((l) => l.time);
-      for (let i = 0; i < count; i++) {
-        rows.push({
-          key: `${u.id}-${date}-${statusKey}-${i}`,
-          userId: u.id,
-          userName: u.name,
-          email: u.email,
-          date,
-          time: times[i] || null,
-          status: statusKey,
-        });
-      }
-    }
-  }
-  return rows;
-}
-
-function loginRecords(users) {
-  const rows = [];
-  for (const u of users) {
-    const hist = u.history || {};
-    for (const date of Object.keys(hist)) {
-      (hist[date].logins || []).forEach((l, i) => {
-        rows.push({
-          key: `${u.id}-${date}-login-${i}`,
-          userId: u.id,
-          userName: u.name,
-          email: u.email,
-          date,
-          time: l.time,
-          device: l.device,
-        });
-      });
-    }
-  }
-  return rows;
-}
-
-function buildRecords(type, users) {
-  let rows;
-  if (type === "logins") rows = loginRecords(users);
-  else if (type === "attempts")
-    rows = [
-      ...statusRecords(users, "success"),
-      ...statusRecords(users, "failed"),
-      ...statusRecords(users, "inReview"),
-    ];
-  else rows = statusRecords(users, type);
-  return rows.sort((a, b) => (recSortKey(a) < recSortKey(b) ? 1 : -1));
-}
-
-function UserChip({ record, onOpenUser }) {
+function UserChip({ userId, userName, email, onOpenUser }) {
   return (
-    <button
-      onClick={() => onOpenUser(record.userId)}
-      className="group flex items-center gap-3 text-left"
-    >
+    <button onClick={() => onOpenUser(userId)} className="group flex items-center gap-3 text-left">
       <div className="grid h-9 w-9 place-items-center rounded-full bg-navy-700 text-xs font-semibold text-violet-300">
-        {record.userName?.[0]?.toUpperCase()}
+        {userName?.[0]?.toUpperCase()}
       </div>
       <div>
         <p className="text-sm font-medium text-white underline-offset-4 group-hover:text-violet-300 group-hover:underline">
-          {record.userName}
+          {userName}
         </p>
-        <p className="text-xs text-slate-500">{record.email}</p>
+        <p className="text-xs text-slate-500">{email}</p>
       </div>
     </button>
   );
 }
 
-function RecordsView({ type, users, onOpenUser, onBack }) {
+function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
   const meta = RECORD_META[type];
-  const records = useMemo(() => buildRecords(type, users), [type, users]);
   const isLogin = type === "logins";
+  const pageSize = 10;
+
+  const [rawQ, setRawQ] = useState("");
+  const q = useDebouncedValue(rawQ, 300);
+  const [page, setPage] = useState(1);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const res = await api.adminRecords({ type, page, pageSize, q });
+      setData(res);
+      setError("");
+    } catch (err) {
+      if (onAuthError(err)) return;
+      setError(err.message);
+    }
+  }, [type, page, q, onAuthError]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [type, q]);
 
   return (
     <div>
-      <button
-        onClick={onBack}
-        className="mb-6 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10"
-      >
-        ← Overview-এ ফিরে যান
-      </button>
-
-      <div className="overflow-hidden rounded-2xl border border-white/10 bg-navy-900/60 shadow-xl backdrop-blur-xl">
-        <div className="flex items-center justify-between border-b border-white/5 px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="text-lg">{meta.icon}</span>
-            <h2 className="text-sm font-semibold text-white">{meta.title}</h2>
-          </div>
-          <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
-            {records.length.toLocaleString("en-US")} টি রেকর্ড
-          </span>
-        </div>
-
-        <ul className="divide-y divide-white/5">
-          {records.map((r) => (
-            <li
-              key={r.key}
-              className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 transition hover:bg-white/[0.02]"
-            >
-              {/* Left: the user the record belongs to */}
-              <UserChip record={r} onOpenUser={onOpenUser} />
-
-              {/* Right: status / time + date */}
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="text-sm text-white">{fmtDate(r.date)}</p>
-                  <p className="text-xs text-slate-500">
-                    {r.time ? new Date(r.time).toLocaleTimeString("en-GB") : "সময় অজানা"}
-                    {isLogin && r.device ? ` · ${r.device.browser || "—"} · ${r.device.os || "—"}` : ""}
-                  </p>
-                </div>
-                {isLogin ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-300">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
-                    Login
-                  </span>
-                ) : (
-                  <span
-                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[r.status].cls}`}
-                  >
-                    <span className={`h-1.5 w-1.5 rounded-full ${STATUS_STYLE[r.status].dot}`} />
-                    {STATUS_STYLE[r.status].label}
-                  </span>
-                )}
-              </div>
-            </li>
-          ))}
-          {records.length === 0 && (
-            <li className="px-6 py-12 text-center text-slate-500">কোনো রেকর্ড নেই।</li>
-          )}
-        </ul>
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10"
+        >
+          ← Overview-এ ফিরে যান
+        </button>
+        <SearchInput value={rawQ} onChange={setRawQ} placeholder="নাম বা ইমেইল খুঁজুন..." />
       </div>
+
+      {error && <ErrorState message={error} onRetry={load} />}
+      {!error && !data && <LoadingState />}
+
+      {!error && data && (
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-navy-900/60 shadow-xl backdrop-blur-xl">
+          <div className="flex items-center justify-between border-b border-white/5 px-6 py-4">
+            <div className="flex items-center gap-3">
+              <span className="text-lg">{meta.icon}</span>
+              <h2 className="text-sm font-semibold text-white">{meta.title}</h2>
+            </div>
+            <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
+              {data.total.toLocaleString("en-US")} টি রেকর্ড
+            </span>
+          </div>
+
+          <ul className="divide-y divide-white/5">
+            {data.rows.map((r) => (
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-6 py-4 transition hover:bg-white/[0.02]">
+                <UserChip userId={r.userId} userName={r.userName} email={r.email} onOpenUser={onOpenUser} />
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="text-sm text-white">{fmtDate(r.time)}</p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(r.time).toLocaleTimeString("en-GB")}
+                      {isLogin ? ` · ${r.browser || "—"} · ${r.os || "—"}` : ""}
+                    </p>
+                  </div>
+                  {isLogin ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/15 px-2.5 py-1 text-xs font-medium text-blue-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+                      Login
+                    </span>
+                  ) : (
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_STYLE[r.status].cls}`}>
+                      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_STYLE[r.status].dot}`} />
+                      {STATUS_STYLE[r.status].label}
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+            {data.rows.length === 0 && (
+              <li>
+                <EmptyState label="কোনো রেকর্ড নেই।" />
+              </li>
+            )}
+          </ul>
+
+          <Pager page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} />
+        </div>
+      )}
     </div>
   );
 }
 
-/* ---------------- User table ---------------- */
+/* ---------------- User table (search, sort, pagination) ---------------- */
 
-function UserTable({ users, currentUserId, onOpen, onAdd, onEdit, onDelete, onFreeze, onUnfreeze }) {
+function SortHeader({ label, sortKey, sort, order, onSort }) {
+  const active = sort === sortKey;
   return (
-    <div className="rounded-2xl border border-white/10 bg-navy-900/60 shadow-xl backdrop-blur-xl">
-      <div className="flex items-center justify-between border-b border-white/5 px-6 py-4">
-        <h2 className="text-sm font-semibold text-white">ইউজার ম্যানেজমেন্ট</h2>
+    <th className="px-6 py-3 font-medium">
+      <button
+        onClick={() => onSort(sortKey)}
+        className={`flex items-center gap-1 transition hover:text-slate-200 ${active ? "text-violet-300" : ""}`}
+      >
+        {label}
+        {active && <span className="text-[10px]">{order === "asc" ? "▲" : "▼"}</span>}
+      </button>
+    </th>
+  );
+}
+
+function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onChanged, refreshKey }) {
+  const pageSize = 8;
+  const [rawQ, setRawQ] = useState("");
+  const q = useDebouncedValue(rawQ, 300);
+  const [page, setPage] = useState(1);
+  const [sort, setSort] = useState("createdAt");
+  const [order, setOrder] = useState("desc");
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [busyId, setBusyId] = useState(null);
+
+  const load = useCallback(async () => {
+    try {
+      const res = await api.adminUsers({ q, page, pageSize, sort, order });
+      setData(res);
+      setError("");
+    } catch (err) {
+      if (onAuthError(err)) return;
+      setError(err.message);
+    }
+  }, [q, page, sort, order, onAuthError]);
+
+  useEffect(() => {
+    load();
+  }, [load, refreshKey]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [q, sort, order]);
+
+  function toggleSort(key) {
+    if (sort === key) setOrder((o) => (o === "asc" ? "desc" : "asc"));
+    else {
+      setSort(key);
+      setOrder("asc");
+    }
+  }
+
+  async function withBusy(id, fn) {
+    setBusyId(id);
+    setActionError("");
+    try {
+      await fn();
+      await load();
+      onChanged();
+    } catch (err) {
+      if (!onAuthError(err)) setActionError(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <SearchInput value={rawQ} onChange={setRawQ} placeholder="নাম বা ইমেইল খুঁজুন..." />
         <button
           onClick={onAdd}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500"
@@ -459,106 +490,118 @@ function UserTable({ users, currentUserId, onOpen, onAdd, onEdit, onDelete, onFr
           + Add New User
         </button>
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="text-xs uppercase tracking-wider text-slate-400">
-              <th className="px-6 py-3 font-medium">ইউজারের নাম</th>
-              <th className="px-6 py-3 font-medium">ইমেইল</th>
-              <th className="px-6 py-3 font-medium">Role</th>
-              <th className="px-6 py-3 font-medium">Status</th>
-              <th className="px-6 py-3 text-right font-medium">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="border-t border-white/5 transition hover:bg-white/[0.02]">
-                <td className="px-6 py-4">
-                  <button
-                    onClick={() => onOpen(u)}
-                    className="group flex items-center gap-3 text-left"
-                  >
-                    <div className="grid h-8 w-8 place-items-center rounded-full bg-navy-700 text-xs font-semibold text-violet-300">
-                      {u.name?.[0]?.toUpperCase()}
-                    </div>
-                    <span className="font-medium text-white underline-offset-4 group-hover:text-violet-300 group-hover:underline">
-                      {u.name}
-                    </span>
-                  </button>
-                </td>
-                <td className="px-6 py-4 text-slate-300">{u.email}</td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                      u.role === "Admin"
-                        ? "bg-violet-500/15 text-violet-300"
-                        : "bg-slate-500/15 text-slate-300"
-                    }`}
-                  >
-                    {u.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  <FreezeStatusBadge status={u.status} />
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex justify-end gap-2">
-                    <button
-                      onClick={() => onEdit(u)}
-                      className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-violet-500/40 hover:text-violet-300"
-                    >
-                      Edit
-                    </button>
-                    {u.status === "frozen" ? (
-                      <button
-                        onClick={() => {
-                          if (confirm(`${u.name} কে আনফ্রিজ / এক্টিভেট করবেন?`)) onUnfreeze(u.id);
-                        }}
-                        className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-emerald-500/40 hover:text-emerald-300"
-                      >
-                        Unfreeze
-                      </button>
-                    ) : (
-                      <button
-                        disabled={u.id === currentUserId}
-                        title={u.id === currentUserId ? "নিজের অ্যাকাউন্ট ফ্রিজ করা যাবে না" : undefined}
-                        onClick={() => {
-                          if (confirm(`${u.name} কে ফ্রিজ করবেন? ইউজার আর লগইন করতে পারবে না।`))
-                            onFreeze(u.id);
-                        }}
-                        className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-amber-500/40 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/10 disabled:hover:text-slate-200"
-                      >
-                        Freeze
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        if (confirm(`${u.name} কে ডিলিট করবেন?`)) onDelete(u.id);
-                      }}
-                      className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-rose-500/40 hover:text-rose-300"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {users.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-slate-500">
-                  কোনো ইউজার নেই।
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+
+      {actionError && (
+        <p role="alert" className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+          {actionError}
+        </p>
+      )}
+
+      {error && <ErrorState message={error} onRetry={load} />}
+      {!error && !data && <LoadingState />}
+
+      {!error && data && (
+        <div className="rounded-2xl border border-white/10 bg-navy-900/60 shadow-xl backdrop-blur-xl">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="text-xs uppercase tracking-wider text-slate-400">
+                  <SortHeader label="ইউজারের নাম" sortKey="name" sort={sort} order={order} onSort={toggleSort} />
+                  <SortHeader label="ইমেইল" sortKey="email" sort={sort} order={order} onSort={toggleSort} />
+                  <SortHeader label="Role" sortKey="role" sort={sort} order={order} onSort={toggleSort} />
+                  <SortHeader label="Status" sortKey="status" sort={sort} order={order} onSort={toggleSort} />
+                  <th className="px-6 py-3 text-right font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.users.map((u) => {
+                  const frozen = u.status === "FROZEN";
+                  const self = u.id === currentUserId;
+                  const busy = busyId === u.id;
+                  return (
+                    <tr key={u.id} className="border-t border-white/5 transition hover:bg-white/[0.02]">
+                      <td className="px-6 py-4">
+                        <button onClick={() => onOpen(u)} className="group flex items-center gap-3 text-left">
+                          <div className="grid h-8 w-8 place-items-center rounded-full bg-navy-700 text-xs font-semibold text-violet-300">
+                            {u.name?.[0]?.toUpperCase()}
+                          </div>
+                          <span className="font-medium text-white underline-offset-4 group-hover:text-violet-300 group-hover:underline">
+                            {u.name}
+                          </span>
+                        </button>
+                      </td>
+                      <td className="px-6 py-4 text-slate-300">{u.email}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                            u.role === "ADMIN" ? "bg-violet-500/15 text-violet-300" : "bg-slate-500/15 text-slate-300"
+                          }`}
+                        >
+                          {u.role === "ADMIN" ? "Admin" : "Normal"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <FreezeStatusBadge status={u.status} />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => onEdit(u)}
+                            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-violet-500/40 hover:text-violet-300"
+                          >
+                            Edit
+                          </button>
+                          {frozen ? (
+                            <button
+                              disabled={busy}
+                              onClick={() => {
+                                if (confirm(`${u.name} কে আনফ্রিজ / এক্টিভেট করবেন?`)) withBusy(u.id, () => api.adminUnfreezeUser(u.id));
+                              }}
+                              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-emerald-500/40 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              Unfreeze
+                            </button>
+                          ) : (
+                            <button
+                              disabled={self || busy}
+                              title={self ? "নিজের অ্যাকাউন্ট ফ্রিজ করা যাবে না" : undefined}
+                              onClick={() => {
+                                if (confirm(`${u.name} কে ফ্রিজ করবেন? ইউজার আর লগইন করতে পারবে না।`))
+                                  withBusy(u.id, () => api.adminFreezeUser(u.id));
+                              }}
+                              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-amber-500/40 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/10 disabled:hover:text-slate-200"
+                            >
+                              Freeze
+                            </button>
+                          )}
+                          <button
+                            disabled={self || busy}
+                            title={self ? "নিজের অ্যাকাউন্ট ডিলিট করা যাবে না" : undefined}
+                            onClick={() => {
+                              if (confirm(`${u.name} কে ডিলিট করবেন?`)) withBusy(u.id, () => api.adminDeleteUser(u.id));
+                            }}
+                            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-rose-500/40 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/10 disabled:hover:text-slate-200"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          {data.users.length === 0 && <EmptyState label="কোনো ইউজার নেই।" />}
+          <Pager page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} />
+        </div>
+      )}
     </div>
   );
 }
 
 function FreezeStatusBadge({ status }) {
-  const frozen = status === "frozen";
+  const frozen = status === "FROZEN";
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
@@ -573,23 +616,59 @@ function FreezeStatusBadge({ status }) {
 
 /* ---------------- Individual user dashboard ---------------- */
 
-function UserDetail({ user, onBack }) {
-  const s = sumHistory(user.history);
+function UserDetail({ userId, onBack, onAuthError }) {
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
 
-  const lastLogin = user.lastLogin
-    ? new Date(user.lastLogin).toLocaleString("en-GB")
-    : "কখনো লগইন করেনি";
+  const load = useCallback(async () => {
+    try {
+      const res = await api.adminUserHistory(userId, {});
+      setData(res);
+      setError("");
+    } catch (err) {
+      if (onAuthError(err)) return;
+      setError(err.message);
+    }
+  }, [userId, onAuthError]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const BackButton = (
+    <button
+      onClick={onBack}
+      className="mb-6 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10"
+    >
+      ← User List-এ ফিরে যান
+    </button>
+  );
+
+  if (error) {
+    return (
+      <div>
+        {BackButton}
+        <ErrorState message={error} onRetry={load} />
+      </div>
+    );
+  }
+  if (!data) {
+    return (
+      <div>
+        {BackButton}
+        <LoadingState />
+      </div>
+    );
+  }
+
+  const { user, lastLogin, history } = data;
+  const s = sumHistory(history);
+  const lastLoginText = lastLogin ? new Date(lastLogin.time).toLocaleString("en-GB") : "কখনো লগইন করেনি";
 
   return (
     <div>
-      <button
-        onClick={onBack}
-        className="mb-6 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10"
-      >
-        ← User List-এ ফিরে যান
-      </button>
+      {BackButton}
 
-      {/* Profile header */}
       <div className="mb-6 flex flex-wrap items-center gap-4 rounded-2xl border border-white/10 bg-navy-900/60 p-6 shadow-xl backdrop-blur-xl">
         <div className="grid h-16 w-16 place-items-center rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 text-2xl font-bold text-white shadow-glow">
           {user.name?.[0]?.toUpperCase()}
@@ -601,36 +680,31 @@ function UserDetail({ user, onBack }) {
         <div className="flex items-center gap-2">
           <span
             className={`rounded-full px-3 py-1 text-xs font-medium ${
-              user.role === "Admin"
-                ? "bg-violet-500/15 text-violet-300"
-                : "bg-slate-500/15 text-slate-300"
+              user.role === "ADMIN" ? "bg-violet-500/15 text-violet-300" : "bg-slate-500/15 text-slate-300"
             }`}
           >
-            {user.role}
+            {user.role === "ADMIN" ? "Admin" : "Normal"}
           </span>
           <FreezeStatusBadge status={user.status} />
         </div>
       </div>
 
-      {/* Details grid */}
       <div className="grid gap-5 lg:grid-cols-2">
         <InfoPanel title="অ্যাক্টিভিটি">
-          <InfoRow label="সর্বশেষ Login" value={lastLogin} />
+          <InfoRow label="সর্বশেষ Login" value={lastLoginText} />
           <InfoRow label="মোট রেকর্ড" value={s.attempts.toLocaleString("en-US")} />
           <InfoRow label="User ID" value={`#${user.id}`} />
         </InfoPanel>
 
         <InfoPanel title="Device Information">
-          <InfoRow label="ডিভাইস" value={user.device?.name || "—"} />
-          <InfoRow label="অপারেটিং সিস্টেম" value={user.device?.os || "—"} />
-          <InfoRow label="ব্রাউজার" value={user.device?.browser || "—"} />
-          <InfoRow label="IP Address" value={user.device?.ip || "—"} mono />
+          <InfoRow label="অপারেটিং সিস্টেম" value={lastLogin?.os || "—"} />
+          <InfoRow label="ব্রাউজার" value={lastLogin?.browser || "—"} />
+          <InfoRow label="IP Address" value={lastLogin?.ip || "—"} mono />
         </InfoPanel>
       </div>
 
-      {/* Summary + Date-wise Activity History — scoped to this user's own history only */}
       <div className="mt-6">
-        <UserActivityDashboard history={user.history} />
+        <UserActivityDashboard history={history} />
       </div>
     </div>
   );
@@ -638,38 +712,126 @@ function UserDetail({ user, onBack }) {
 
 /* ---------------- System log ---------------- */
 
-function SystemLog({ logs }) {
+function LogsSection({ onAuthError }) {
+  const pageSize = 15;
+  const [page, setPage] = useState(1);
+  const [level, setLevel] = useState("");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [data, setData] = useState(null);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    try {
+      const res = await api.adminLogs({ page, pageSize, level, from, to });
+      setData(res);
+      setError("");
+    } catch (err) {
+      if (onAuthError(err)) return;
+      setError(err.message);
+    }
+  }, [page, level, from, to, onAuthError]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [level, from, to]);
+
   const dot = { info: "bg-blue-400", success: "bg-emerald-400", error: "bg-rose-400" };
+
   return (
-    <div className="rounded-2xl border border-white/10 bg-navy-900/60 p-2 shadow-xl backdrop-blur-xl">
-      <ul className="divide-y divide-white/5">
-        {logs.map((log) => (
-          <li key={log.id} className="flex items-start gap-3 px-4 py-4">
-            <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dot[log.level]}`} />
-            <div className="flex-1">
-              <p className="text-sm text-white">{log.event}</p>
-              <p className="text-xs text-slate-500">
-                {log.actor} · {log.time}
-              </p>
-            </div>
-          </li>
-        ))}
-      </ul>
+    <div>
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <select
+          value={level}
+          onChange={(e) => setLevel(e.target.value)}
+          aria-label="লেভেল ফিল্টার"
+          className="rounded-xl border border-white/10 bg-navy-950/60 px-3 py-2.5 text-sm text-white outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
+        >
+          <option value="">সব লেভেল</option>
+          <option value="info">Info</option>
+          <option value="error">Error</option>
+        </select>
+        <label className="flex items-center gap-2 text-xs text-slate-400">
+          From
+          <input
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            className="rounded-xl border border-white/10 bg-navy-950/60 px-3 py-2 text-sm text-white outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
+          />
+        </label>
+        <label className="flex items-center gap-2 text-xs text-slate-400">
+          To
+          <input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="rounded-xl border border-white/10 bg-navy-950/60 px-3 py-2 text-sm text-white outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
+          />
+        </label>
+      </div>
+
+      {error && <ErrorState message={error} onRetry={load} />}
+      {!error && !data && <LoadingState />}
+
+      {!error && data && (
+        <div className="rounded-2xl border border-white/10 bg-navy-900/60 shadow-xl backdrop-blur-xl">
+          <ul className="divide-y divide-white/5">
+            {data.logs.map((log) => (
+              <li key={log.id} className="flex items-start gap-3 px-4 py-4">
+                <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${dot[log.level] || dot.info}`} />
+                <div className="flex-1">
+                  <p className="text-sm text-white">{log.event}</p>
+                  <p className="text-xs text-slate-500">
+                    {log.actor} · {new Date(log.time).toLocaleString("en-GB")}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+          {data.logs.length === 0 && <EmptyState label="কোনো লগ নেই।" />}
+          <Pager page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} />
+        </div>
+      )}
     </div>
   );
 }
 
 /* ---------------- Add / edit modal ---------------- */
 
-function UserModal({ mode, user, onClose, onSave }) {
+function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [role, setRole] = useState(user?.role || "Normal");
+  const [role, setRole] = useState(user?.role || "NORMAL");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
 
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
-    onSave({ name: name.trim(), email: email.trim(), role });
+    if (mode === "add" && password.length < 8) {
+      setError("পাসওয়ার্ড কমপক্ষে ৮ ক্যারেক্টারের হতে হবে।");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      const payload = { name: name.trim(), email: email.trim(), role };
+      if (password) payload.password = password;
+      if (mode === "add") await api.adminAddUser(payload);
+      else await api.adminUpdateUser(user.id, payload);
+      onSaved();
+    } catch (err) {
+      if (onAuthError(err)) return;
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -682,36 +844,62 @@ function UserModal({ mode, user, onClose, onSave }) {
           {mode === "add" ? "নতুন ইউজার যোগ করুন" : "ইউজার এডিট করুন"}
         </h3>
 
-        <label className="mb-4 block">
+        <label className="mb-4 block" htmlFor="modal-name">
           <span className="mb-1.5 block text-sm text-slate-300">Name</span>
           <input
+            id="modal-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            required
             className="w-full rounded-xl border border-white/10 bg-navy-950/60 px-4 py-2.5 text-sm text-white outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
           />
         </label>
 
-        <label className="mb-4 block">
+        <label className="mb-4 block" htmlFor="modal-email">
           <span className="mb-1.5 block text-sm text-slate-300">Email</span>
           <input
+            id="modal-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
             className="w-full rounded-xl border border-white/10 bg-navy-950/60 px-4 py-2.5 text-sm text-white outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
           />
         </label>
 
-        <label className="mb-6 block">
+        <label className="mb-4 block" htmlFor="modal-role">
           <span className="mb-1.5 block text-sm text-slate-300">Role</span>
           <select
+            id="modal-role"
             value={role}
             onChange={(e) => setRole(e.target.value)}
             className="w-full rounded-xl border border-white/10 bg-navy-950/60 px-4 py-2.5 text-sm text-white outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
           >
-            <option value="Normal">Normal</option>
-            <option value="Admin">Admin</option>
+            <option value="NORMAL">Normal</option>
+            <option value="ADMIN">Admin</option>
           </select>
         </label>
+
+        <label className="mb-6 block" htmlFor="modal-password">
+          <span className="mb-1.5 block text-sm text-slate-300">
+            {mode === "add" ? "Password" : "নতুন Password (ঐচ্ছিক)"}
+          </span>
+          <input
+            id="modal-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={mode === "add" ? "কমপক্ষে ৮ ক্যারেক্টার" : "খালি রাখলে অপরিবর্তিত থাকবে"}
+            autoComplete="new-password"
+            className="w-full rounded-xl border border-white/10 bg-navy-950/60 px-4 py-2.5 text-sm text-white outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
+          />
+        </label>
+
+        {error && (
+          <p role="alert" className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+            {error}
+          </p>
+        )}
 
         <div className="flex justify-end gap-3">
           <button
@@ -723,9 +911,10 @@ function UserModal({ mode, user, onClose, onSave }) {
           </button>
           <button
             type="submit"
-            className="rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500"
+            disabled={saving}
+            className="rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Save
+            {saving ? "সেভ হচ্ছে..." : "Save"}
           </button>
         </div>
       </form>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { sumHistory } from "@/lib/store";
+import { sumHistory } from "@/lib/historyUtils";
 
 const RING = {
   violet: "from-violet-500/20 to-violet-500/5 text-violet-300",

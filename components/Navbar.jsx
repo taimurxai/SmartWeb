@@ -1,14 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useStore } from "@/lib/store";
+import { useAuth } from "@/lib/auth-context";
 
 export default function Navbar() {
-  const { session, logout } = useStore();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     router.replace("/");
   }
 
@@ -23,11 +23,14 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-4">
           <div className="hidden text-right sm:block">
-            <p className="text-sm font-medium text-white">{session?.name}</p>
-            <p className="text-xs text-slate-400">{session?.email}</p>
+            <p className="text-sm font-medium text-white">{user?.name}</p>
+            <p className="text-xs text-slate-400">{user?.email}</p>
           </div>
-          <div className="grid h-9 w-9 place-items-center rounded-full bg-navy-700 text-sm font-semibold text-violet-300">
-            {session?.name?.[0]?.toUpperCase() || "U"}
+          <div
+            aria-hidden="true"
+            className="grid h-9 w-9 place-items-center rounded-full bg-navy-700 text-sm font-semibold text-violet-300"
+          >
+            {user?.name?.[0]?.toUpperCase() || "U"}
           </div>
           <button
             onClick={handleLogout}

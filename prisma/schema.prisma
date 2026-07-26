@@ -1,0 +1,117 @@
+// Prisma schema for Trackr.
+//
+// Datasource is SQLite for local development (no Postgres/Docker available in
+// this environment). To move to production Postgres: change `provider` below
+// to "postgresql", point DATABASE_URL at the real instance, delete
+// prisma/migrations, and run `npx prisma migrate dev --name init` again.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  NORMAL
+}
+
+enum UserStatus {
+  ACTIVE
+  FROZEN
+}
+
+enum TrackingStatus {
+  IN_REVIEW
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  name        String
+  email       String     @unique
+  password    String
+  role        Role       @default(NORMAL)
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  sessions            Session[]
+  loginEvents         LoginEvent[]
+  trackingSubmissions TrackingSubmission[]
+  auditLogs           AuditLog[]           @relation("ActorAuditLogs")
+}
+
+// Opaque, server-validated session. Deleting the row (or freezing the user)
+// revokes access immediately on the next request — unlike a stateless JWT,
+// which can't be revoked without a separate blocklist.
+model Session {
+  id        String   @id
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model LoginEvent {
+  id      Int      @id @default(autoincrement())
+  userId  Int
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  time    DateTime @default(now())
+  ip      String?
+  device  String?
+  os      String?
+  browser String?
+  success Boolean  @default(true)
+
+  @@index([userId, time])
+}
+
+// A tracking code's identity and creation time. Status/stage are NOT stored
+// here — they're derived live (lib/tracking.js) from createdAt + elapsed time,
+// except for a fixed demo outcome via overrideStatus. This keeps every reader
+// (any user, any admin view) in agreement with no cache/counter to drift.
+model TrackingCode {
+  code          String          @id
+  createdAt     DateTime        @default(now())
+  overrideStatus TrackingStatus?
+
+  submissions TrackingSubmission[]
+}
+
+// One row per "a user looked up this code at this time." Per-day, per-user,
+// per-global stats are always COUNT/GROUP BY queries over these rows joined
+// to the code's current derived status — never a separately incremented
+// counter, so attempts always exactly equals success+failed+inReview.
+model TrackingSubmission {
+  id           Int          @id @default(autoincrement())
+  userId       Int
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code         String
+  trackingCode TrackingCode @relation(fields: [code], references: [code], onDelete: Cascade)
+  createdAt    DateTime     @default(now())
+
+  @@index([userId, createdAt])
+  @@index([code])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  actorId   Int?
+  actor     User?    @relation("ActorAuditLogs", fields: [actorId], references: [id], onDelete: SetNull)
+  event     String
+  level     String   @default("info")
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
