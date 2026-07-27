@@ -140,11 +140,11 @@ export default function AdminDashboard() {
         </div>
 
         {!selectedUserView && (
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold tracking-tight text-white">
+          <div className="mb-8 animate-fade-in-up">
+            <h1 className="text-2xl font-bold tracking-tight text-white font-display">
               {recordView ? RECORD_META[recordView].title : NAV.find((n) => n.key === tab)?.label}
             </h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm font-medium text-slate-400">
               {recordView ? RECORD_META[recordView].subtitle : `স্বাগতম, ${user.name}`}
             </p>
           </div>
@@ -228,9 +228,9 @@ function SummaryCard({ label, value, accent, icon, hint, onClick }) {
         </div>
         <span className="text-slate-600 transition-colors group-hover:text-white">↗</span>
       </div>
-      <p className="mt-5 text-sm font-medium text-slate-400 group-hover:text-slate-300">{label}</p>
-      <p className="mt-1 text-4xl font-bold text-white tracking-tight">{value.toLocaleString("en-US")}</p>
-      <p className="mt-2 text-xs text-slate-500">{hint}</p>
+      <p className="mt-5 text-sm font-semibold tracking-wide text-slate-400 group-hover:text-slate-300">{label}</p>
+      <p className="mt-1 text-4xl font-bold text-white tracking-tight font-display">{value.toLocaleString("en-US")}</p>
+      <p className="mt-2 text-xs font-medium text-slate-500">{hint}</p>
     </button>
   );
 }

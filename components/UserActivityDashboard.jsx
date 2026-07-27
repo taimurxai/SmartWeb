@@ -15,19 +15,20 @@ export function StatCard({ label, value, accent, icon, size = "lg" }) {
   const big = size === "lg";
   return (
     <div
-      className={`rounded-2xl border border-white/10 bg-navy-900/60 ${
+      className={`group rounded-2xl border border-white/10 bg-navy-900/60 ${
         big ? "p-6" : "p-5"
-      } shadow-xl backdrop-blur-xl`}
+      } shadow-xl backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white/[0.03] hover:border-${accent}-500/30 hover:shadow-[0_0_20px_-5px_var(--tw-shadow-color)]`}
+      style={{ '--tw-shadow-color': accent === 'violet' ? 'rgba(139,92,246,0.3)' : accent === 'blue' ? 'rgba(59,130,246,0.3)' : accent === 'emerald' ? 'rgba(16,185,129,0.3)' : accent === 'rose' ? 'rgba(244,63,94,0.3)' : 'rgba(245,158,11,0.3)' }}
     >
       <div
-        className={`mb-4 grid ${big ? "h-11 w-11" : "h-9 w-9"} place-items-center rounded-xl bg-gradient-to-br ${
+        className={`mb-4 grid ${big ? "h-11 w-11" : "h-9 w-9"} place-items-center rounded-xl bg-gradient-to-br transition-transform group-hover:scale-110 group-hover:rotate-3 ${
           RING[accent]
         }`}
       >
         <span className={big ? "text-lg" : "text-base"}>{icon}</span>
       </div>
-      <p className={`${big ? "text-sm" : "text-xs"} text-slate-400`}>{label}</p>
-      <p className={`mt-1 ${big ? "text-3xl" : "text-2xl"} font-bold text-white`}>
+      <p className={`${big ? "text-sm" : "text-xs"} font-medium text-slate-400 group-hover:text-slate-300 transition-colors`}>{label}</p>
+      <p className={`mt-1 ${big ? "text-3xl" : "text-2xl"} font-bold tracking-tight text-white font-display`}>
         {value.toLocaleString("en-US")}
       </p>
     </div>
@@ -58,7 +59,7 @@ export function UserSummaryStats({ history }) {
 export function InfoPanel({ title, children }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-navy-900/60 p-6 shadow-xl backdrop-blur-xl">
-      <h3 className="mb-4 text-sm font-semibold text-white">{title}</h3>
+      <h3 className="mb-5 text-sm font-semibold tracking-wide text-white uppercase">{title}</h3>
       <dl className="space-y-3">{children}</dl>
     </div>
   );
@@ -66,9 +67,9 @@ export function InfoPanel({ title, children }) {
 
 export function InfoRow({ label, value, mono }) {
   return (
-    <div className="flex items-center justify-between border-b border-white/5 pb-3 last:border-0 last:pb-0">
-      <dt className="text-sm text-slate-400">{label}</dt>
-      <dd className={`text-sm text-white ${mono ? "font-mono" : ""}`}>{value}</dd>
+    <div className="flex items-center justify-between border-b border-white/5 pb-3 last:border-0 last:pb-0 transition-colors hover:bg-white/[0.02] -mx-2 px-2 rounded-lg">
+      <dt className="text-sm font-medium text-slate-400">{label}</dt>
+      <dd className={`text-sm text-slate-200 ${mono ? "font-mono" : "font-semibold"}`}>{value}</dd>
     </div>
   );
 }

@@ -97,9 +97,9 @@ export default function UserDashboard() {
     <div className="min-h-screen">
       <Navbar />
       <main className="mx-auto max-w-6xl px-5 py-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight text-white">স্বাগতম, {user.name} 👋</h1>
-          <p className="mt-1 text-sm text-slate-400">
+        <div className="mb-10 animate-fade-in-up">
+          <h1 className="text-3xl font-bold tracking-tight text-white font-display">স্বাগতম, {user.name} 👋</h1>
+          <p className="mt-2 text-sm font-medium text-slate-400">
             আপনার কোড বা লিংক দিন এবং রিয়েল-টাইম স্ট্যাটাস ট্র্যাক করুন।
           </p>
         </div>
@@ -107,44 +107,44 @@ export default function UserDashboard() {
         {/* Code input */}
         <form
           onSubmit={handleTrack}
-          className="rounded-2xl border border-white/10 bg-navy-900/60 p-8 shadow-xl backdrop-blur-xl transition-all hover:border-violet-500/30"
+          className="rounded-2xl border border-white/10 bg-navy-900/60 p-8 shadow-xl backdrop-blur-xl transition-all hover:border-violet-500/30 animate-fade-in-up animate-delay-100"
         >
-          <label className="mb-3 block text-sm font-semibold text-slate-300" htmlFor="track-code">
+          <label className="mb-3 block text-sm font-semibold tracking-wide text-slate-300 uppercase" htmlFor="track-code">
             URL বা ১৫/১৬ ডিজিটের কোড দিন
           </label>
-          <div className="flex flex-col gap-3 sm:flex-row">
+          <div className="flex flex-col gap-4 sm:flex-row">
             <input
               id="track-code"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="e.g. 1234 5678 9012 3456"
-              className="flex-1 rounded-xl border border-white/10 bg-navy-950/60 px-5 py-3.5 text-sm text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-violet-500/60 focus:bg-navy-900/80 focus:ring-4 focus:ring-violet-500/10 focus:shadow-[0_0_15px_-3px_rgba(139,92,246,0.3)]"
+              className="flex-1 rounded-xl border border-white/10 bg-navy-950/60 px-5 py-3.5 text-sm font-medium text-white placeholder-slate-500 outline-none transition-all duration-300 focus:border-violet-500/60 focus:bg-navy-900/80 focus:ring-2 focus:ring-violet-500/20 focus:shadow-glow-inner"
             />
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-8 py-3.5 text-sm font-bold tracking-wide text-white shadow-glow transition-all active:scale-95 hover:from-violet-500 hover:to-blue-500 hover:shadow-glow-lg disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-8 py-3.5 text-sm font-bold tracking-wide text-white shadow-glow transition-all duration-300 active:scale-95 hover:from-violet-500 hover:to-blue-500 hover:shadow-glow-lg disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting ? "যাচাই হচ্ছে..." : "Verify & Track"}
             </button>
           </div>
           {error && (
-            <p role="alert" className="mt-3 text-sm text-rose-300">
+            <p role="alert" className="mt-4 text-sm font-medium text-rose-300">
               {error}
             </p>
           )}
-          <p className="mt-3 text-xs text-slate-500">
+          <p className="mt-4 text-xs font-medium text-slate-500">
             ডেমো কোড: 1234567890123456 (In Review), 9876543210987654 (Success), 1111222233334444 (Failed)
           </p>
         </form>
 
         {/* Status card */}
         {result && (
-          <div className="mt-6 animate-[fadeIn_.3s_ease] rounded-2xl border border-white/10 bg-navy-900/60 p-6 shadow-xl backdrop-blur-xl">
+          <div className="mt-8 animate-[fadeIn_.4s_ease-out] rounded-2xl border border-white/10 bg-navy-900/60 p-8 shadow-xl backdrop-blur-xl animate-fade-in-up animate-delay-200">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-wider text-slate-400">ট্র্যাকিং কোড</p>
-                <p className="mt-1 font-mono text-lg text-white">{result.code}</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">ট্র্যাকিং কোড</p>
+                <p className="mt-1.5 font-mono text-xl font-medium text-white">{result.code}</p>
               </div>
               <div className="text-right">
                 <p className="mb-2 text-xs uppercase tracking-wider text-slate-400">বর্তমান স্ট্যাটাস</p>
@@ -174,14 +174,14 @@ export default function UserDashboard() {
                   );
                 })}
               </div>
-              <div className="mt-2 flex justify-between text-xs text-slate-500">
+              <div className="mt-3 flex justify-between text-xs font-medium text-slate-500">
                 <span>Submitted</span>
                 <span>In Review</span>
                 <span>Result</span>
               </div>
             </div>
 
-            <p className="mt-5 text-xs text-slate-500">
+            <p className="mt-6 text-xs font-medium text-slate-500 border-t border-white/5 pt-4">
               সর্বশেষ আপডেট: {new Date(result.updatedAt).toLocaleString("en-GB")}
               {result.status === "IN_REVIEW" && " · লাইভ আপডেট হচ্ছে..."}
             </p>
@@ -192,14 +192,14 @@ export default function UserDashboard() {
             the Prisma-backed API. This reads a Firestore doc at
             submissions/{code} directly via onSnapshot, so status changes
             show up instantly with no polling interval. */}
-        <div className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold text-white">রিয়েল-টাইম স্ট্যাটাস ট্র্যাকিং (Firestore)</h2>
+        <div className="mt-12 animate-fade-in-up animate-delay-200">
+          <h2 className="mb-5 text-xl font-bold tracking-tight text-white font-display">রিয়েল-টাইম স্ট্যাটাস ট্র্যাকিং (Firestore)</h2>
           <LiveStatusTracker />
         </div>
 
         {/* Personal summary + date-wise history — scoped to this account only */}
-        <div className="mt-10">
-          <h2 className="mb-4 text-lg font-semibold text-white">আপনার অ্যাক্টিভিটি সামারি</h2>
+        <div className="mt-12 animate-fade-in-up animate-delay-300">
+          <h2 className="mb-5 text-xl font-bold tracking-tight text-white font-display">আপনার অ্যাক্টিভিটি সামারি</h2>
           {historyError && <ErrorState message={historyError} onRetry={loadHistory} />}
           {!history && !historyError && <LoadingState />}
           {history && <UserActivityDashboard history={history} />}

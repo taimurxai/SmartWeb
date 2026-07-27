@@ -15,10 +15,15 @@ body {
   color: #e2e8f0;
 }
 
+::selection {
+  background: rgba(139, 92, 246, 0.4);
+  color: #fff;
+}
+
 body {
   background-image:
-    radial-gradient(900px circle at 15% -10%, rgba(124, 58, 237, 0.15), transparent 45%),
-    radial-gradient(700px circle at 100% 0%, rgba(59, 130, 246, 0.1), transparent 40%);
+    radial-gradient(1000px circle at 15% -10%, rgba(124, 58, 237, 0.12), transparent 45%),
+    radial-gradient(800px circle at 100% 0%, rgba(59, 130, 246, 0.08), transparent 40%);
   background-attachment: fixed;
 }
 
@@ -27,8 +32,8 @@ body::before {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background-image:
-    radial-gradient(1000px circle at 20% 10%, rgba(124, 58, 237, 0.08), transparent 45%),
-    radial-gradient(800px circle at 80% 20%, rgba(59, 130, 246, 0.08), transparent 40%);
+    radial-gradient(1200px circle at 20% 20%, rgba(124, 58, 237, 0.06), transparent 50%),
+    radial-gradient(900px circle at 80% 30%, rgba(59, 130, 246, 0.06), transparent 45%);
   pointer-events: none;
   z-index: -1;
   animation: breathe 12s ease-in-out infinite alternate;
@@ -40,16 +45,22 @@ body::before {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d1228;
+  background: rgba(13, 18, 40, 0.8);
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a3266;
+  background: rgba(42, 50, 102, 0.8);
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a4488;
+  background: rgba(58, 68, 136, 1);
+}
+
+@layer utilities {
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
 }
