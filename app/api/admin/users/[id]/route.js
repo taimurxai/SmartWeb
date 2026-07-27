@@ -4,6 +4,7 @@ import { withAdmin } from "@/lib/rbac";
 import { updateUserSchema } from "@/lib/validation";
 import { SAFE_USER_FIELDS } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit";
+import bcrypt from "bcryptjs";
 
 export const PATCH = withAdmin(async (request, { params, user: admin }) => {
   const id = Number(params.id);
@@ -20,9 +21,18 @@ export const PATCH = withAdmin(async (request, { params, user: admin }) => {
     return NextResponse.json({ error: "নিজের Role পরিবর্তন করা যাবে না।" }, { status: 400 });
   }
 
-
+  let email;
+  if (body.email) {
+    email = body.email.toLowerCase();
+  }
 
   const data = { name: body.name, email, role: body.role };
+  
+  // If the admin provides a new password, hash it and update it
+  if (body.password) {
+    data.password = await bcrypt.hash(body.password, 10);
+  }
+
   Object.keys(data).forEach((k) => data[k] === undefined && delete data[k]);
 
   try {
