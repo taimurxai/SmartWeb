@@ -11,11 +11,12 @@ import { LoadingState, EmptyState, ErrorState } from "@/components/DataState";
 import Pager from "@/components/Pager";
 import SearchInput from "@/components/SearchInput";
 import MetricsOverview from "@/components/MetricsOverview";
+import { LayoutDashboard, Users, FileText, Key, Target, CheckCircle2, XCircle, Clock, ChevronRight, LogOut } from "lucide-react";
 
 const NAV = [
-  { key: "overview", label: "Dashboard Overview", icon: "▤" },
-  { key: "users", label: "User List", icon: "☰" },
-  { key: "logs", label: "System Log", icon: "≡" },
+  { key: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
+  { key: "users", label: "User List", icon: Users },
+  { key: "logs", label: "System Log", icon: FileText },
 ];
 
 export default function AdminDashboard() {
@@ -108,7 +109,7 @@ export default function AdminDashboard() {
                   : "text-slate-400 hover:bg-white/5 hover:text-slate-200 hover:translate-x-1"
               }`}
             >
-              <span className={`text-base transition-transform ${tab === item.key ? "scale-110" : "group-hover:scale-110"}`}>{item.icon}</span>
+              <item.icon className={`h-5 w-5 transition-transform ${tab === item.key ? "scale-110" : "group-hover:scale-110"}`} />
               {item.label}
             </button>
           ))}
@@ -118,7 +119,7 @@ export default function AdminDashboard() {
           onClick={handleLogout}
           className="mt-4 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
         >
-          <span className="text-base">⏻</span> Logout
+          <LogOut className="h-5 w-5" /> Logout
         </button>
       </aside>
 
@@ -200,36 +201,50 @@ export default function AdminDashboard() {
 
 /* ---------------- Overview / summary cards ---------------- */
 
-function SummaryCard({ label, value, accent, icon, hint, onClick }) {
-  const ring = {
-    violet: "from-violet-500/20 to-violet-500/5 text-violet-300",
-    blue: "from-blue-500/20 to-blue-500/5 text-blue-300",
-    emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-300",
-    rose: "from-rose-500/20 to-rose-500/5 text-rose-300",
-    amber: "from-amber-500/20 to-amber-500/5 text-amber-300",
-  }[accent];
-  
-  const hoverRing = {
-    violet: "group-hover:border-violet-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(139,92,246,0.4)]",
-    blue: "group-hover:border-blue-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(59,130,246,0.4)]",
-    emerald: "group-hover:border-emerald-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(16,185,129,0.4)]",
-    rose: "group-hover:border-rose-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(244,63,94,0.4)]",
-    amber: "group-hover:border-amber-500/40 group-hover:shadow-[0_0_20px_-5px_rgba(245,158,11,0.4)]",
-  }[accent];
+function SummaryCard({ label, value, accent, icon: Icon, hint, onClick }) {
+  const GLOW = {
+    violet: "rgba(139,92,246,0.3)",
+    blue: "rgba(59,130,246,0.3)",
+    emerald: "rgba(16,185,129,0.3)",
+    rose: "rgba(244,63,94,0.3)",
+    amber: "rgba(245,158,11,0.3)",
+  };
+
+  const RING = {
+    violet: "from-violet-500/20 to-violet-500/5 text-violet-400 group-hover:text-violet-300",
+    blue: "from-blue-500/20 to-blue-500/5 text-blue-400 group-hover:text-blue-300",
+    emerald: "from-emerald-500/20 to-emerald-500/5 text-emerald-400 group-hover:text-emerald-300",
+    rose: "from-rose-500/20 to-rose-500/5 text-rose-400 group-hover:text-rose-300",
+    amber: "from-amber-500/20 to-amber-500/5 text-amber-400 group-hover:text-amber-300",
+  };
 
   return (
     <button
       onClick={onClick}
-      className={`group text-left rounded-2xl border border-white/10 bg-navy-900/60 p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 ${hoverRing}`}
+      className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-navy-900/60 p-6 text-left shadow-xl backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:bg-white/[0.04]`}
+      style={{
+        boxShadow: `0 4px 20px -5px rgba(0,0,0,0.5), inset 0 0 0 1px transparent`,
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.boxShadow = `0 10px 30px -10px ${GLOW[accent]}, inset 0 0 0 1px ${GLOW[accent]}`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = `0 4px 20px -5px rgba(0,0,0,0.5), inset 0 0 0 1px transparent`;
+      }}
     >
       <div className="flex items-start justify-between">
-        <div className={`grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br transition-transform group-hover:scale-110 group-hover:rotate-3 ${ring}`}>
-          <span className="text-xl">{icon}</span>
+        <div
+          className={`grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br transition-all duration-300 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-[0_0_15px_-3px_var(--icon-glow)] ${
+            RING[accent]
+          }`}
+          style={{ '--icon-glow': GLOW[accent] }}
+        >
+          <Icon className="h-6 w-6" strokeWidth={2.5} />
         </div>
-        <span className="text-slate-600 transition-colors group-hover:text-white">↗</span>
+        <ChevronRight className="h-5 w-5 text-slate-600 transition-colors group-hover:text-white" />
       </div>
-      <p className="mt-5 text-sm font-semibold tracking-wide text-slate-400 group-hover:text-slate-300">{label}</p>
-      <p className="mt-1 text-4xl font-bold text-white tracking-tight font-display">{value.toLocaleString("en-US")}</p>
+      <p className="mt-5 text-sm font-semibold tracking-wide text-slate-400 group-hover:text-slate-300 transition-colors">{label}</p>
+      <p className="mt-1 text-4xl font-bold tracking-tight text-white font-display">{value.toLocaleString("en-US")}</p>
       <p className="mt-2 text-xs font-medium text-slate-500">{hint}</p>
     </button>
   );
@@ -258,12 +273,12 @@ function OverviewSection({ onCard, onAuthError, refreshKey }) {
   if (!summary) return <LoadingState />;
 
   const cards = [
-    { type: "users", label: "Total Users", value: summary.totalUsers, accent: "violet", icon: "👥", hint: "All users list" },
-    { type: "logins", label: "Total Logins", value: summary.totalLogins, accent: "blue", icon: "🔑", hint: "All login records" },
-    { type: "attempts", label: "Total Attempts", value: summary.totalAttempts, accent: "violet", icon: "🎯", hint: "All attempt records" },
-    { type: "success", label: "Total Success", value: summary.totalSuccess, accent: "emerald", icon: "✅", hint: "Success records only" },
-    { type: "failed", label: "Total Failed", value: summary.totalFailed, accent: "rose", icon: "❌", hint: "Failed records only" },
-    { type: "inReview", label: "Total In Review", value: summary.totalInReview, accent: "amber", icon: "⏳", hint: "In Review records only" },
+    { type: "users", label: "Total Users", value: summary.totalUsers, accent: "violet", icon: Users, hint: "All users list" },
+    { type: "logins", label: "Total Logins", value: summary.totalLogins, accent: "blue", icon: Key, hint: "All login records" },
+    { type: "attempts", label: "Total Attempts", value: summary.totalAttempts, accent: "violet", icon: Target, hint: "All attempt records" },
+    { type: "success", label: "Total Success", value: summary.totalSuccess, accent: "emerald", icon: CheckCircle2, hint: "Success records only" },
+    { type: "failed", label: "Total Failed", value: summary.totalFailed, accent: "rose", icon: XCircle, hint: "Failed records only" },
+    { type: "inReview", label: "Total In Review", value: summary.totalInReview, accent: "amber", icon: Clock, hint: "In Review records only" },
   ];
 
   return (
@@ -288,11 +303,11 @@ function OverviewSection({ onCard, onAuthError, refreshKey }) {
 /* ---------------- Per-card record views (global, across all users) ---------------- */
 
 const RECORD_META = {
-  logins: { title: "Total Logins", subtitle: "All users login records", icon: "🔑" },
-  attempts: { title: "Total Attempts", subtitle: "All users attempt records", icon: "🎯" },
-  success: { title: "Total Success", subtitle: "Success records only", icon: "✅" },
-  failed: { title: "Total Failed", subtitle: "Failed records only", icon: "❌" },
-  inReview: { title: "Total In Review", subtitle: "In Review records only", icon: "⏳" },
+  logins: { title: "Total Logins", subtitle: "All users login records" },
+  attempts: { title: "Total Attempts", subtitle: "All users attempt records" },
+  success: { title: "Total Success", subtitle: "Success records only" },
+  failed: { title: "Total Failed", subtitle: "Failed records only" },
+  inReview: { title: "Total In Review", subtitle: "In Review records only" },
 };
 
 const STATUS_STYLE = {
