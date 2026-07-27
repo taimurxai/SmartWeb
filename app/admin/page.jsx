@@ -556,6 +556,18 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex justify-end gap-2">
+                          {u.deviceHash && (
+                            <button
+                              disabled={busy}
+                              title="Reset the user's bound PC device"
+                              onClick={() => {
+                                if (confirm(`${u.name} এর পিসি/ডিভাইস বাইন্ডিং মুছে ফেলবেন?`)) withBusy(u.id, () => api.adminResetDevice(u.id));
+                              }}
+                              className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-blue-500/40 hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-40"
+                            >
+                              Reset Device
+                            </button>
+                          )}
                           <button
                             onClick={() => onEdit(u)}
                             className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-violet-500/40 hover:text-violet-300"
