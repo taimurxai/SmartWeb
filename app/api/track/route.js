@@ -10,12 +10,12 @@ export const POST = withAuth(async (request, { user }) => {
   try {
     body = trackCodeSchema.parse(await request.json());
   } catch {
-    return NextResponse.json({ error: "কোডটি সঠিক ফরম্যাটে দিন।" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid tracking code format." }, { status: 400 });
   }
 
   const code = normalizeCode(body.input);
   if (code.length < 15 || code.length > 16) {
-    return NextResponse.json({ error: "কোডটি ১৫ বা ১৬ ডিজিটের হতে হবে।" }, { status: 400 });
+    return NextResponse.json({ error: "Code must be 15 or 16 digits." }, { status: 400 });
   }
 
   const trackingCode = await prisma.trackingCode.upsert({
@@ -25,7 +25,7 @@ export const POST = withAuth(async (request, { user }) => {
   });
 
   await prisma.trackingSubmission.create({ data: { userId: user.id, code } });
-  await writeAuditLog({ actorId: user.id, event: `কোড ট্র্যাক করা হয়েছে (${code})`, level: "info" });
+  await writeAuditLog({ actorId: user.id, event: `Tracking code submitted (${code})`, level: "info" });
 
   const { status, stage } = resolveTrackingStatus(trackingCode);
   const updatedAt = new Date().toISOString();

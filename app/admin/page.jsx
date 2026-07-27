@@ -39,7 +39,7 @@ export default function AdminDashboard() {
   const handleApiError = useCallback(
     (err) => {
       if (isAuthError(err)) {
-        forceLogout("সেশন শেষ হয়ে গেছে। আবার লগইন করুন।");
+        forceLogout("Session expired. Please log in again.");
         return true;
       }
       return false;
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
               {recordView ? RECORD_META[recordView].title : NAV.find((n) => n.key === tab)?.label}
             </h1>
             <p className="mt-1 text-sm font-medium text-slate-400">
-              {recordView ? RECORD_META[recordView].subtitle : `স্বাগতম, ${user.name}`}
+              {recordView ? RECORD_META[recordView].subtitle : `Welcome back, ${user.name}`}
             </p>
           </div>
         )}
@@ -258,12 +258,12 @@ function OverviewSection({ onCard, onAuthError, refreshKey }) {
   if (!summary) return <LoadingState />;
 
   const cards = [
-    { type: "users", label: "Total Users", value: summary.totalUsers, accent: "violet", icon: "👥", hint: "সম্পূর্ণ ইউজার লিস্ট" },
-    { type: "logins", label: "Total Logins", value: summary.totalLogins, accent: "blue", icon: "🔑", hint: "সব লগইন রেকর্ড" },
-    { type: "attempts", label: "Total Attempts", value: summary.totalAttempts, accent: "violet", icon: "🎯", hint: "সব Attempt রেকর্ড" },
-    { type: "success", label: "Total Success", value: summary.totalSuccess, accent: "emerald", icon: "✅", hint: "শুধু Success রেকর্ড" },
-    { type: "failed", label: "Total Failed", value: summary.totalFailed, accent: "rose", icon: "❌", hint: "শুধু Failed রেকর্ড" },
-    { type: "inReview", label: "Total In Review", value: summary.totalInReview, accent: "amber", icon: "⏳", hint: "শুধু In Review রেকর্ড" },
+    { type: "users", label: "Total Users", value: summary.totalUsers, accent: "violet", icon: "👥", hint: "All users list" },
+    { type: "logins", label: "Total Logins", value: summary.totalLogins, accent: "blue", icon: "🔑", hint: "All login records" },
+    { type: "attempts", label: "Total Attempts", value: summary.totalAttempts, accent: "violet", icon: "🎯", hint: "All attempt records" },
+    { type: "success", label: "Total Success", value: summary.totalSuccess, accent: "emerald", icon: "✅", hint: "Success records only" },
+    { type: "failed", label: "Total Failed", value: summary.totalFailed, accent: "rose", icon: "❌", hint: "Failed records only" },
+    { type: "inReview", label: "Total In Review", value: summary.totalInReview, accent: "amber", icon: "⏳", hint: "In Review records only" },
   ];
 
   return (
@@ -288,11 +288,11 @@ function OverviewSection({ onCard, onAuthError, refreshKey }) {
 /* ---------------- Per-card record views (global, across all users) ---------------- */
 
 const RECORD_META = {
-  logins: { title: "Total Logins", subtitle: "সব ইউজারের লগইন রেকর্ড", icon: "🔑" },
-  attempts: { title: "Total Attempts", subtitle: "সব ইউজারের সম্পূর্ণ Attempt রেকর্ড", icon: "🎯" },
-  success: { title: "Total Success", subtitle: "শুধুমাত্র Success রেকর্ড", icon: "✅" },
-  failed: { title: "Total Failed", subtitle: "শুধুমাত্র Failed রেকর্ড", icon: "❌" },
-  inReview: { title: "Total In Review", subtitle: "শুধুমাত্র Review-এ থাকা রেকর্ড", icon: "⏳" },
+  logins: { title: "Total Logins", subtitle: "All users login records", icon: "🔑" },
+  attempts: { title: "Total Attempts", subtitle: "All users attempt records", icon: "🎯" },
+  success: { title: "Total Success", subtitle: "Success records only", icon: "✅" },
+  failed: { title: "Total Failed", subtitle: "Failed records only", icon: "❌" },
+  inReview: { title: "Total In Review", subtitle: "In Review records only", icon: "⏳" },
 };
 
 const STATUS_STYLE = {
@@ -358,9 +358,9 @@ function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
           onClick={onBack}
           className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10"
         >
-          ← Overview-এ ফিরে যান
+          ← Back to Overview
         </button>
-        <SearchInput value={rawQ} onChange={setRawQ} placeholder="নাম বা ইমেইল খুঁজুন..." />
+        <SearchInput value={rawQ} onChange={setRawQ} placeholder="Search by name or email..." />
       </div>
 
       {error && <ErrorState message={error} onRetry={load} />}
@@ -374,7 +374,7 @@ function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
               <h2 className="text-sm font-semibold text-white">{meta.title}</h2>
             </div>
             <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-slate-300">
-              {data.total.toLocaleString("en-US")} টি রেকর্ড
+              {data.total.toLocaleString("en-US")} records
             </span>
           </div>
 
@@ -407,7 +407,7 @@ function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
             ))}
             {data.rows.length === 0 && (
               <li>
-                <EmptyState label="কোনো রেকর্ড নেই।" />
+                <EmptyState label="No records found." />
               </li>
             )}
           </ul>
@@ -492,7 +492,7 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <SearchInput value={rawQ} onChange={setRawQ} placeholder="নাম বা ইমেইল খুঁজুন..." />
+        <SearchInput value={rawQ} onChange={setRawQ} placeholder="Search by name or email..." />
         <button
           onClick={onAdd}
           className="rounded-lg bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500"
@@ -516,8 +516,8 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="text-xs uppercase tracking-wider text-slate-400">
-                  <SortHeader label="ইউজারের নাম" sortKey="name" sort={sort} order={order} onSort={toggleSort} />
-                  <SortHeader label="ইমেইল" sortKey="email" sort={sort} order={order} onSort={toggleSort} />
+                  <SortHeader label="User Name" sortKey="name" sort={sort} order={order} onSort={toggleSort} />
+                  <SortHeader label="Email" sortKey="email" sort={sort} order={order} onSort={toggleSort} />
                   <SortHeader label="Role" sortKey="role" sort={sort} order={order} onSort={toggleSort} />
                   <SortHeader label="Status" sortKey="status" sort={sort} order={order} onSort={toggleSort} />
                   <th className="px-6 py-3 text-right font-medium">Action</th>
@@ -561,7 +561,7 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                               disabled={busy}
                               title="Reset the user's bound PC device"
                               onClick={() => {
-                                if (confirm(`${u.name} এর পিসি/ডিভাইস বাইন্ডিং মুছে ফেলবেন?`)) withBusy(u.id, () => api.adminResetDevice(u.id));
+                                if (confirm(`Reset device binding for ${u.name}?`)) withBusy(u.id, () => api.adminResetDevice(u.id));
                               }}
                               className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-blue-500/40 hover:text-blue-300 disabled:cursor-not-allowed disabled:opacity-40"
                             >
@@ -578,7 +578,7 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                             <button
                               disabled={busy}
                               onClick={() => {
-                                if (confirm(`${u.name} কে আনফ্রিজ / এক্টিভেট করবেন?`)) withBusy(u.id, () => api.adminUnfreezeUser(u.id));
+                                if (confirm(`Unfreeze / Activate ${u.name}?`)) withBusy(u.id, () => api.adminUnfreezeUser(u.id));
                               }}
                               className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-emerald-500/40 hover:text-emerald-300 disabled:cursor-not-allowed disabled:opacity-40"
                             >
@@ -587,9 +587,9 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                           ) : (
                             <button
                               disabled={self || busy}
-                              title={self ? "নিজের অ্যাকাউন্ট ফ্রিজ করা যাবে না" : undefined}
+                              title={self ? "Cannot freeze own account" : undefined}
                               onClick={() => {
-                                if (confirm(`${u.name} কে ফ্রিজ করবেন? ইউজার আর লগইন করতে পারবে না।`))
+                                if (confirm(`Freeze ${u.name}? They will no longer be able to log in.`))
                                   withBusy(u.id, () => api.adminFreezeUser(u.id));
                               }}
                               className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-amber-500/40 hover:text-amber-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/10 disabled:hover:text-slate-200"
@@ -599,9 +599,9 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                           )}
                           <button
                             disabled={self || busy}
-                            title={self ? "নিজের অ্যাকাউন্ট ডিলিট করা যাবে না" : undefined}
+                            title={self ? "Cannot delete own account" : undefined}
                             onClick={() => {
-                              if (confirm(`${u.name} কে ডিলিট করবেন?`)) withBusy(u.id, () => api.adminDeleteUser(u.id));
+                              if (confirm(`Delete ${u.name}?`)) withBusy(u.id, () => api.adminDeleteUser(u.id));
                             }}
                             className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:border-rose-500/40 hover:text-rose-300 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-white/10 disabled:hover:text-slate-200"
                           >
@@ -615,7 +615,7 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
               </tbody>
             </table>
           </div>
-          {data.users.length === 0 && <EmptyState label="কোনো ইউজার নেই।" />}
+          {data.users.length === 0 && <EmptyState label="No users found." />}
           <Pager page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} />
         </div>
       )}
@@ -663,7 +663,7 @@ function UserDetail({ userId, onBack, onAuthError }) {
       onClick={onBack}
       className="mb-6 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10"
     >
-      ← User List-এ ফিরে যান
+      ← Back to User List
     </button>
   );
 
@@ -686,7 +686,7 @@ function UserDetail({ userId, onBack, onAuthError }) {
 
   const { user, lastLogin, history } = data;
   const s = sumHistory(history);
-  const lastLoginText = lastLogin ? new Date(lastLogin.time).toLocaleString("en-GB") : "কখনো লগইন করেনি";
+  const lastLoginText = lastLogin ? new Date(lastLogin.time).toLocaleString("en-GB") : "Never logged in";
 
   return (
     <div>
@@ -713,15 +713,15 @@ function UserDetail({ userId, onBack, onAuthError }) {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <InfoPanel title="অ্যাক্টিভিটি">
-          <InfoRow label="সর্বশেষ Login" value={lastLoginText} />
-          <InfoRow label="মোট রেকর্ড" value={s.attempts.toLocaleString("en-US")} />
+        <InfoPanel title="Activity">
+          <InfoRow label="Last Login" value={lastLoginText} />
+          <InfoRow label="Total Records" value={s.attempts.toLocaleString("en-US")} />
           <InfoRow label="User ID" value={`#${user.id}`} />
         </InfoPanel>
 
         <InfoPanel title="Device Information">
-          <InfoRow label="অপারেটিং সিস্টেম" value={lastLogin?.os || "—"} />
-          <InfoRow label="ব্রাউজার" value={lastLogin?.browser || "—"} />
+          <InfoRow label="Operating System" value={lastLogin?.os || "—"} />
+          <InfoRow label="Browser" value={lastLogin?.browser || "—"} />
           <InfoRow label="IP Address" value={lastLogin?.ip || "—"} mono />
         </InfoPanel>
       </div>
@@ -771,10 +771,10 @@ function LogsSection({ onAuthError }) {
         <select
           value={level}
           onChange={(e) => setLevel(e.target.value)}
-          aria-label="লেভেল ফিল্টার"
+          aria-label="Level filter"
           className="rounded-xl border border-white/10 bg-navy-950/60 px-3 py-2.5 text-sm text-white outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
         >
-          <option value="">সব লেভেল</option>
+          <option value="">All levels</option>
           <option value="info">Info</option>
           <option value="error">Error</option>
         </select>
@@ -816,7 +816,7 @@ function LogsSection({ onAuthError }) {
               </li>
             ))}
           </ul>
-          {data.logs.length === 0 && <EmptyState label="কোনো লগ নেই।" />}
+          {data.logs.length === 0 && <EmptyState label="No logs available." />}
           <Pager page={page} pageSize={pageSize} total={data.total} onPageChange={setPage} />
         </div>
       )}
@@ -838,7 +838,7 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
     e.preventDefault();
     if (!name.trim() || !email.trim()) return;
     if (mode === "add" && password.length < 8) {
-      setError("পাসওয়ার্ড কমপক্ষে ৮ ক্যারেক্টারের হতে হবে।");
+      setError("Password must be at least 8 characters long.");
       return;
     }
     setSaving(true);
@@ -864,7 +864,7 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
         className="w-full max-w-md rounded-2xl border border-white/10 bg-navy-850 p-6 shadow-2xl"
       >
         <h3 className="mb-5 text-lg font-semibold text-white">
-          {mode === "add" ? "নতুন ইউজার যোগ করুন" : "ইউজার এডিট করুন"}
+          {mode === "add" ? "Add New User" : "Edit User"}
         </h3>
 
         <label className="mb-4 block" htmlFor="modal-name">
@@ -905,14 +905,14 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
 
         <label className="mb-6 block" htmlFor="modal-password">
           <span className="mb-1.5 block text-sm text-slate-300">
-            {mode === "add" ? "Password" : "নতুন Password (ঐচ্ছিক)"}
+            {mode === "add" ? "Password" : "New Password (Optional)"}
           </span>
           <input
             id="modal-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={mode === "add" ? "কমপক্ষে ৮ ক্যারেক্টার" : "খালি রাখলে অপরিবর্তিত থাকবে"}
+            placeholder={mode === "add" ? "At least 8 characters" : "Leave empty to keep unchanged"}
             autoComplete="new-password"
             className="w-full rounded-xl border border-white/10 bg-navy-950/60 px-4 py-2.5 text-sm text-white outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20"
           />
@@ -937,7 +937,7 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
             disabled={saving}
             className="rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {saving ? "সেভ হচ্ছে..." : "Save"}
+            {saving ? "Saving..." : "Save"}
           </button>
         </div>
       </form>

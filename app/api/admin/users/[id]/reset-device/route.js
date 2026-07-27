@@ -16,7 +16,7 @@ export const POST = withAdmin(async (request, { params, user: admin }) => {
     }
   }).catch(() => null);
 
-  if (!updated) return NextResponse.json({ error: "ইউজার পাওয়া যায়নি।" }, { status: 404 });
+  if (!updated) return NextResponse.json({ error: "User not found." }, { status: 404 });
 
   await writeAuditLog({ actorId: admin.id, event: `User device binding reset: ${updated.email}`, level: "info" });
   return NextResponse.json({ ok: true });

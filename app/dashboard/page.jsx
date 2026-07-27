@@ -38,7 +38,7 @@ export default function UserDashboard() {
       setHistoryError("");
     } catch (err) {
       if (isAuthError(err)) {
-        forceLogout("সেশন শেষ হয়ে গেছে। আবার লগইন করুন।");
+        forceLogout("Session expired. Please log in again.");
         return;
       }
       setHistoryError(err.message);
@@ -61,7 +61,7 @@ export default function UserDashboard() {
       startPolling(res);
     } catch (err) {
       if (isAuthError(err)) {
-        forceLogout("সেশন শেষ হয়ে গেছে। আবার লগইন করুন।");
+        forceLogout("Session expired. Please log in again.");
         return;
       }
       setError(err.message);
@@ -98,9 +98,9 @@ export default function UserDashboard() {
       <Navbar />
       <main className="mx-auto max-w-6xl px-5 py-10">
         <div className="mb-10 animate-fade-in-up">
-          <h1 className="text-3xl font-bold tracking-tight text-white font-display">স্বাগতম, {user.name} 👋</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-white font-display">Welcome back, {user.name} 👋</h1>
           <p className="mt-2 text-sm font-medium text-slate-400">
-            আপনার কোড বা লিংক দিন এবং রিয়েল-টাইম স্ট্যাটাস ট্র্যাক করুন।
+            Enter your tracking URL or code to track real-time status.
           </p>
         </div>
 
@@ -110,7 +110,7 @@ export default function UserDashboard() {
           className="rounded-2xl border border-white/10 bg-navy-900/60 p-8 shadow-xl backdrop-blur-xl transition-all hover:border-violet-500/30 animate-fade-in-up animate-delay-100"
         >
           <label className="mb-3 block text-sm font-semibold tracking-wide text-slate-300 uppercase" htmlFor="track-code">
-            URL বা ১৫/১৬ ডিজিটের কোড দিন
+            Enter tracking URL or 15/16-digit code
           </label>
           <div className="flex flex-col gap-4 sm:flex-row">
             <input
@@ -125,7 +125,7 @@ export default function UserDashboard() {
               disabled={submitting}
               className="rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-8 py-3.5 text-sm font-bold tracking-wide text-white shadow-glow transition-all duration-300 active:scale-95 hover:from-violet-500 hover:to-blue-500 hover:shadow-glow-lg disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? "যাচাই হচ্ছে..." : "Verify & Track"}
+              {submitting ? "Verifying..." : "Verify & Track"}
             </button>
           </div>
           {error && (
@@ -134,7 +134,7 @@ export default function UserDashboard() {
             </p>
           )}
           <p className="mt-4 text-xs font-medium text-slate-500">
-            ডেমো কোড: 1234567890123456 (In Review), 9876543210987654 (Success), 1111222233334444 (Failed)
+            Demo codes: 1234567890123456 (In Review), 9876543210987654 (Success), 1111222233334444 (Failed)
           </p>
         </form>
 
@@ -143,11 +143,11 @@ export default function UserDashboard() {
           <div className="mt-8 animate-[fadeIn_.4s_ease-out] rounded-2xl border border-white/10 bg-navy-900/60 p-8 shadow-xl backdrop-blur-xl animate-fade-in-up animate-delay-200">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">ট্র্যাকিং কোড</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Tracking Code</p>
                 <p className="mt-1.5 font-mono text-xl font-medium text-white">{result.code}</p>
               </div>
               <div className="text-right">
-                <p className="mb-2 text-xs uppercase tracking-wider text-slate-400">বর্তমান স্ট্যাটাস</p>
+                <p className="mb-2 text-xs uppercase tracking-wider text-slate-400">Current Status</p>
                 <StatusBadge status={result.status} stage={result.stage} />
               </div>
             </div>
@@ -182,8 +182,8 @@ export default function UserDashboard() {
             </div>
 
             <p className="mt-6 text-xs font-medium text-slate-500 border-t border-white/5 pt-4">
-              সর্বশেষ আপডেট: {new Date(result.updatedAt).toLocaleString("en-GB")}
-              {result.status === "IN_REVIEW" && " · লাইভ আপডেট হচ্ছে..."}
+              Last updated: {new Date(result.updatedAt).toLocaleString("en-GB")}
+              {result.status === "IN_REVIEW" && " · Live updating..."}
             </p>
           </div>
         )}
@@ -193,13 +193,13 @@ export default function UserDashboard() {
             submissions/{code} directly via onSnapshot, so status changes
             show up instantly with no polling interval. */}
         <div className="mt-12 animate-fade-in-up animate-delay-200">
-          <h2 className="mb-5 text-xl font-bold tracking-tight text-white font-display">রিয়েল-টাইম স্ট্যাটাস ট্র্যাকিং (Firestore)</h2>
+          <h2 className="mb-5 text-xl font-bold tracking-tight text-white font-display">Live Status Tracker (Firestore)</h2>
           <LiveStatusTracker />
         </div>
 
         {/* Personal summary + date-wise history — scoped to this account only */}
         <div className="mt-12 animate-fade-in-up animate-delay-300">
-          <h2 className="mb-5 text-xl font-bold tracking-tight text-white font-display">আপনার অ্যাক্টিভিটি সামারি</h2>
+          <h2 className="mb-5 text-xl font-bold tracking-tight text-white font-display">Your Activity Overview</h2>
           {historyError && <ErrorState message={historyError} onRetry={loadHistory} />}
           {!history && !historyError && <LoadingState />}
           {history && <UserActivityDashboard history={history} />}

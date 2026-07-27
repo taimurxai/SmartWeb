@@ -47,7 +47,7 @@ export default function LoginPage() {
             <span className="text-2xl font-black text-white font-display">T</span>
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white font-display">Trackr</h1>
-          <p className="mt-2 text-sm font-medium text-slate-400">সাইন ইন করে আপনার ড্যাশবোর্ডে প্রবেশ করুন</p>
+          <p className="mt-2 text-sm font-medium text-slate-400">Sign in to access your dashboard</p>
         </div>
 
         <form

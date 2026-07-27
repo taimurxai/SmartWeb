@@ -46,7 +46,7 @@ export const POST = withAdmin(async (request, { user: admin }) => {
   try {
     body = addUserSchema.parse(await request.json());
   } catch (err) {
-    return NextResponse.json({ error: "ইনপুট সঠিক নয়।", details: err?.issues }, { status: 400 });
+    return NextResponse.json({ error: "Invalid input provided.", details: err?.issues }, { status: 400 });
   }
 
   const email = body.email.toLowerCase();
@@ -61,7 +61,7 @@ export const POST = withAdmin(async (request, { user: admin }) => {
     return NextResponse.json({ user: created }, { status: 201 });
   } catch (err) {
     if (err.code === "P2002") {
-      return NextResponse.json({ error: "এই ইমেইল দিয়ে ইতিমধ্যে একজন ইউজার আছে।" }, { status: 409 });
+      return NextResponse.json({ error: "A user with this email already exists." }, { status: 409 });
     }
     throw err;
   }

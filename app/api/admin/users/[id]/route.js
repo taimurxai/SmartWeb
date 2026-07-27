@@ -14,11 +14,11 @@ export const PATCH = withAdmin(async (request, { params, user: admin }) => {
   try {
     body = updateUserSchema.parse(await request.json());
   } catch (err) {
-    return NextResponse.json({ error: "ইনপুট সঠিক নয়।", details: err?.issues }, { status: 400 });
+    return NextResponse.json({ error: "Invalid input provided.", details: err?.issues }, { status: 400 });
   }
 
   if (id === admin.id && body.role && body.role !== "ADMIN") {
-    return NextResponse.json({ error: "নিজের Role পরিবর্তন করা যাবে না।" }, { status: 400 });
+    return NextResponse.json({ error: "You cannot modify your own role." }, { status: 400 });
   }
 
   let email;
@@ -41,9 +41,9 @@ export const PATCH = withAdmin(async (request, { params, user: admin }) => {
     return NextResponse.json({ user: updated });
   } catch (err) {
     if (err.code === "P2002") {
-      return NextResponse.json({ error: "এই ইমেইল দিয়ে ইতিমধ্যে একজন ইউজার আছে।" }, { status: 409 });
+      return NextResponse.json({ error: "A user with this email already exists." }, { status: 409 });
     }
-    if (err.code === "P2025") return NextResponse.json({ error: "ইউজার পাওয়া যায়নি।" }, { status: 404 });
+    if (err.code === "P2025") return NextResponse.json({ error: "User not found." }, { status: 404 });
     throw err;
   }
 });
@@ -52,7 +52,7 @@ export const DELETE = withAdmin(async (request, { params, user: admin }) => {
   const id = Number(params.id);
   if (!Number.isInteger(id)) return NextResponse.json({ error: "Invalid id." }, { status: 400 });
   if (id === admin.id) {
-    return NextResponse.json({ error: "নিজের অ্যাকাউন্ট ডিলিট করা যাবে না।" }, { status: 400 });
+    return NextResponse.json({ error: "You cannot delete your own account." }, { status: 400 });
   }
 
   try {
@@ -61,7 +61,7 @@ export const DELETE = withAdmin(async (request, { params, user: admin }) => {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    if (err.code === "P2025") return NextResponse.json({ error: "ইউজার পাওয়া যায়নি।" }, { status: 404 });
+    if (err.code === "P2025") return NextResponse.json({ error: "User not found." }, { status: 404 });
     throw err;
   }
 });

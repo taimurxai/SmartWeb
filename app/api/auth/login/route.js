@@ -24,7 +24,7 @@ export async function POST(request) {
   try {
     body = loginSchema.parse(await request.json());
   } catch {
-    return NextResponse.json({ error: "ইমেইল বা পাসওয়ার্ড সঠিক ফরম্যাটে দিন।" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid email or password format." }, { status: 400 });
   }
 
   const email = body.email.toLowerCase();
@@ -36,7 +36,7 @@ export async function POST(request) {
   });
   if (!ipLimit.allowed || !emailLimit.allowed) {
     return NextResponse.json(
-      { error: "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।" },
+      { error: "Too many attempts. Please try again later." },
       { status: 429 }
     );
   }
@@ -51,21 +51,21 @@ export async function POST(request) {
   if (!user || !(await bcrypt.compare(body.password, user.password))) {
     await logAttempt(user?.id, false);
     await writeAuditLog({ actorId: user?.id ?? null, event: `Failed login for ${email}`, level: "error" });
-    return NextResponse.json({ error: "ভুল ইমেইল বা পাসওয়ার্ড।" }, { status: 401 });
+    return NextResponse.json({ error: "Invalid credentials." }, { status: 401 });
   }
 
   if (user.status === "FROZEN") {
     await logAttempt(user.id, false);
     await writeAuditLog({ actorId: user.id, event: "Login blocked: account frozen", level: "error" });
     return NextResponse.json(
-      { error: "আপনার অ্যাকাউন্টটি ফ্রিজ করা হয়েছে। এডমিনের সাথে যোগাযোগ করুন।", code: "FROZEN" },
+      { error: "Account frozen. Please contact administration.", code: "FROZEN" },
       { status: 403 }
     );
   }
 
   const token = await createSession(user.id, { ip, userAgent });
   await logAttempt(user.id, true);
-  await writeAuditLog({ actorId: user.id, event: "লগইন করেছেন", level: "info" });
+  await writeAuditLog({ actorId: user.id, event: "User logged in", level: "info" });
 
   return NextResponse.json({ user: toSafeUser(user), token });
 }

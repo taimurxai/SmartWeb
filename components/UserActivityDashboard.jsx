@@ -108,7 +108,7 @@ function DayDetail({ date, day }) {
               <InfoRow key={i} label={`Login ${i + 1}`} value={new Date(l.time).toLocaleTimeString("en-GB")} />
             ))
           ) : (
-            <p className="text-sm text-slate-500">এই দিনে কোনো লগইন রেকর্ড নেই।</p>
+            <p className="text-sm text-slate-500">No login records found for this day.</p>
           )}
         </InfoPanel>
 
@@ -122,7 +122,7 @@ function DayDetail({ date, day }) {
               />
             ))
           ) : (
-            <p className="text-sm text-slate-500">ডিভাইস তথ্য নেই।</p>
+            <p className="text-sm text-slate-500">No device information available.</p>
           )}
         </InfoPanel>
       </div>
@@ -136,7 +136,7 @@ function DayDetail({ date, day }) {
             </li>
           ))}
           {(!day.logs || day.logs.length === 0) && (
-            <li className="px-4 py-6 text-center text-sm text-slate-500">কোনো Activity Log নেই।</li>
+            <li className="px-4 py-6 text-center text-sm text-slate-500">No activity logs available.</li>
           )}
         </ul>
       </div>
@@ -156,7 +156,7 @@ export function DateHistorySection({ history }) {
   if (dates.length === 0) {
     return (
       <div className="rounded-2xl border border-white/10 bg-navy-900/60 p-10 text-center text-slate-500 shadow-xl backdrop-blur-xl">
-        এখনো কোনো Date-wise History নেই।
+        No date-wise history available yet.
       </div>
     );
   }
@@ -206,7 +206,7 @@ export default function UserActivityDashboard({ history }) {
         <div className="mb-2 flex items-center justify-between text-sm">
           <span className="text-slate-400">Success Rate</span>
           <span className="font-semibold text-white">
-            {successRate}% ({s.attempts} মোট)
+            {successRate}% ({s.attempts} total)
           </span>
         </div>
         <div className="h-2.5 w-full overflow-hidden rounded-full bg-navy-700">
