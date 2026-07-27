@@ -6,8 +6,7 @@
 // prisma/migrations, and run `npx prisma migrate dev --name init` again.
 
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
