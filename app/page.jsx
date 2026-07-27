@@ -101,17 +101,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 rounded-xl border border-white/5 bg-navy-900/40 p-4 text-xs font-medium text-slate-400 animate-fade-in-up animate-delay-200">
-          <p className="mb-1.5 font-semibold text-slate-300 uppercase tracking-wider">ডেমো লগইন:</p>
-          <div className="flex justify-between border-b border-white/5 pb-1 mb-1">
-            <span>Admin</span>
-            <span className="text-slate-300 font-mono">admin@demo.com / admin123</span>
-          </div>
-          <div className="flex justify-between">
-            <span>User</span>
-            <span className="text-slate-300 font-mono">user1@demo.com / user123</span>
-          </div>
-        </div>
       </div>
     </main>
   );
