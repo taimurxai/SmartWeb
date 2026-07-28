@@ -11,7 +11,7 @@ import { LoadingState, EmptyState, ErrorState } from "@/components/DataState";
 import Pager from "@/components/Pager";
 import SearchInput from "@/components/SearchInput";
 import MetricsOverview from "@/components/MetricsOverview";
-import { LayoutDashboard, Users, FileText, Key, Target, CheckCircle2, XCircle, Clock, ChevronRight, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Key, Target, CheckCircle2, XCircle, Clock, ChevronRight, LogOut, AlertTriangle, MessageCircle } from "lucide-react";
 
 const NAV = [
   { key: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
@@ -279,11 +279,13 @@ function OverviewSection({ onCard, onAuthError, refreshKey }) {
     { type: "success", label: "Total Success", value: summary.totalSuccess, accent: "emerald", icon: CheckCircle2, hint: "Success records only" },
     { type: "failed", label: "Total Failed", value: summary.totalFailed, accent: "rose", icon: XCircle, hint: "Failed records only" },
     { type: "inReview", label: "Total In Review", value: summary.totalInReview, accent: "amber", icon: Clock, hint: "In Review records only" },
+    { type: "suspicious", label: "Total Suspicious", value: summary.totalSuspicious, accent: "rose", icon: AlertTriangle, hint: "Suspicious records only" },
+    { type: "liveChat", label: "Total Live Chat", value: summary.totalLiveChat, accent: "blue", icon: MessageCircle, hint: "Live Chat records only" },
   ];
 
   return (
     <div className="space-y-8">
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {cards.map((c) => (
           <SummaryCard key={c.type} {...c} onClick={() => onCard(c.type)} />
         ))}
@@ -308,6 +310,8 @@ const RECORD_META = {
   success: { title: "Total Success", subtitle: "Success records only" },
   failed: { title: "Total Failed", subtitle: "Failed records only" },
   inReview: { title: "Total In Review", subtitle: "In Review records only" },
+  suspicious: { title: "Total Suspicious", subtitle: "Suspicious records only" },
+  liveChat: { title: "Total Live Chat", subtitle: "Live Chat records only" },
 };
 
 const STATUS_STYLE = {

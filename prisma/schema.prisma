@@ -27,6 +27,8 @@ enum TrackingStatus {
   IN_REVIEW
   SUCCESS
   FAILED
+  SUSPICIOUS
+  LIVE_CHAT
 }
 
 model User {

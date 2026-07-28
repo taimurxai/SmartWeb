@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { sumHistory } from "@/lib/historyUtils";
-import { Key, Target, CheckCircle2, XCircle, Clock, CalendarDays, Activity, ChevronRight } from "lucide-react";
+import { Key, Target, CheckCircle2, XCircle, Clock, CalendarDays, Activity, ChevronRight, AlertTriangle, MessageCircle } from "lucide-react";
 
 const RING = {
   violet: "from-violet-500/20 to-violet-500/5 text-violet-400 group-hover:text-violet-300",
@@ -61,9 +61,11 @@ export function UserSummaryStats({ history }) {
     { label: "Total Success", value: s.success, accent: "emerald", icon: CheckCircle2 },
     { label: "Total Failed", value: s.failed, accent: "rose", icon: XCircle },
     { label: "Total In Review", value: s.inReview, accent: "amber", icon: Clock },
+    { label: "Suspicious", value: s.suspicious, accent: "rose", icon: AlertTriangle },
+    { label: "Live Chat", value: s.liveChat, accent: "blue", icon: MessageCircle },
   ];
   return (
-    <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-5">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {stats.map((m) => (
         <StatCard key={m.label} {...m} />
       ))}
@@ -109,11 +111,13 @@ function DayDetail({ date, day }) {
     { label: "Success", value: day.success, accent: "emerald", icon: CheckCircle2 },
     { label: "Failed", value: day.failed, accent: "rose", icon: XCircle },
     { label: "In Review", value: day.inReview, accent: "amber", icon: Clock },
+    { label: "Suspicious", value: day.suspicious, accent: "rose", icon: AlertTriangle },
+    { label: "Live Chat", value: day.liveChat, accent: "blue", icon: MessageCircle },
   ];
 
   return (
     <div className="space-y-6 animate-[fadeIn_.4s_ease-out]">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {miniStats.map((m) => (
           <StatCard key={m.label} size="sm" {...m} />
         ))}

@@ -21,5 +21,7 @@ export const GET = withAdmin(async () => {
     totalSuccess: totals.success,
     totalFailed: totals.failed,
     totalInReview: totals.inReview,
+    totalSuspicious: totals.suspicious,
+    totalLiveChat: totals.liveChat,
   });
 });

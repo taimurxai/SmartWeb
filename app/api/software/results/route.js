@@ -12,9 +12,15 @@ export async function POST(request) {
   try {
     const data = await request.json();
     
-    // Here you can handle the results coming from the software.
-    // For now we just log it or return a success message.
-    // If you need to save it to a specific Prisma model, you can add it here.
+    // Handle results coming from the software apps
+    if (data.code && data.status) {
+      if (["SUSPICIOUS", "LIVE_CHAT"].includes(data.status)) {
+        await prisma.trackingCode.update({
+          where: { code: data.code },
+          data: { overrideStatus: data.status }
+        });
+      }
+    }
     
     return NextResponse.json({ 
       success: true, 

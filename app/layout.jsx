@@ -19,7 +19,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="bn" className={`${outfit.variable} ${inter.variable}`}>
+    <html lang="bn" translate="no" className={`${outfit.variable} ${inter.variable}`}>
+      <head>
+        <meta name="google" content="notranslate" />
+      </head>
       <body className="min-h-screen font-sans antialiased bg-navy-950 text-slate-200">
         <AuthProvider>{children}</AuthProvider>
       </body>

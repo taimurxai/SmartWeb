@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { withAdmin } from "@/lib/rbac";
 import { getStatusRecords, getLoginRecords } from "@/lib/services/records";
 
-const TYPES = ["logins", "attempts", "success", "failed", "inReview"];
+const TYPES = ["logins", "attempts", "success", "failed", "inReview", "suspicious", "liveChat"];
 
 export const GET = withAdmin(async (request) => {
   const { searchParams } = new URL(request.url);
