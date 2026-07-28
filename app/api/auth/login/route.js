@@ -6,12 +6,12 @@ import { loginSchema } from "@/lib/validation";
 import { checkRateLimit } from "@/lib/rateLimit";
 import { writeAuditLog } from "@/lib/audit";
 import { parseUserAgent, getClientIp } from "@/lib/device";
-import { originIsTrusted } from "@/lib/rbac";
+import { originIsTrusted, withErrorHandler } from "@/lib/rbac";
 
 const LOGIN_MAX_ATTEMPTS = 5;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 
-export async function POST(request) {
+export const POST = withErrorHandler(async (request) => {
   if (!originIsTrusted(request)) {
     return NextResponse.json({ error: "Cross-origin request blocked." }, { status: 403 });
   }
@@ -29,8 +29,8 @@ export async function POST(request) {
 
   const email = body.email.toLowerCase();
 
-  const ipLimit = checkRateLimit(`login:ip:${ip}`, { max: LOGIN_MAX_ATTEMPTS * 4, windowMs: LOGIN_WINDOW_MS });
-  const emailLimit = checkRateLimit(`login:email:${ip}:${email}`, {
+  const ipLimit = await checkRateLimit(`login:ip:${ip}`, { max: LOGIN_MAX_ATTEMPTS * 4, windowMs: LOGIN_WINDOW_MS });
+  const emailLimit = await checkRateLimit(`login:email:${ip}:${email}`, {
     max: LOGIN_MAX_ATTEMPTS,
     windowMs: LOGIN_WINDOW_MS,
   });
@@ -68,4 +68,4 @@ export async function POST(request) {
   await writeAuditLog({ actorId: user.id, event: "User logged in", level: "info" });
 
   return NextResponse.json({ user: toSafeUser(user), token });
-}
+});
