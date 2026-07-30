@@ -116,8 +116,6 @@ export default function AdminDashboard() {
           ))}
         </nav>
 
-        </nav>
-
         <button
           onClick={() => setCleanModalOpen(true)}
           className="mt-auto mb-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-400 transition hover:bg-rose-500/10 hover:text-rose-300"
