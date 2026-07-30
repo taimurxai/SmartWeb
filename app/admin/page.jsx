@@ -343,6 +343,8 @@ const STATUS_STYLE = {
   SUCCESS: { label: "Account Success", cls: "bg-emerald-500/15 text-emerald-300", dot: "bg-emerald-400" },
   FAILED: { label: "Failed", cls: "bg-rose-500/15 text-rose-300", dot: "bg-rose-400" },
   IN_REVIEW: { label: "In Review", cls: "bg-amber-500/15 text-amber-300", dot: "bg-amber-400" },
+  SUSPICIOUS: { label: "Suspicious", cls: "bg-rose-500/15 text-rose-300", dot: "bg-rose-400" },
+  LIVE_CHAT: { label: "Live Chat", cls: "bg-blue-500/15 text-blue-300", dot: "bg-blue-400" },
 };
 
 function fmtDate(d) {
@@ -426,7 +428,14 @@ function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
             {data.rows.map((r) => (
               <li key={r.id} className="group flex flex-wrap items-center justify-between gap-3 px-6 py-4 transition-all duration-300 hover:bg-white/[0.03] relative">
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-violet-500 opacity-0 transition-opacity group-hover:opacity-100 rounded-r-md"></div>
-                <UserChip userId={r.userId} userName={r.userName} email={r.email} onOpenUser={onOpenUser} />
+                <div className="flex flex-col gap-1">
+                  <UserChip userId={r.userId} userName={r.userName} email={r.email} onOpenUser={onOpenUser} />
+                  {!isLogin && r.code && (
+                    <span className="text-xs text-slate-400 pl-12">
+                      Token: <span className="font-mono text-slate-300">{r.code}</span>
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right transition-transform group-hover:-translate-x-1">
                     <p className="text-sm text-white">{fmtDate(r.time)}</p>
@@ -441,10 +450,15 @@ function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
                       Login
                     </span>
                   ) : (
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${STATUS_STYLE[r.status].cls}`}>
-                      <span className={`h-1.5 w-1.5 rounded-full ${STATUS_STYLE[r.status].dot} animate-pulse`} />
-                      {STATUS_STYLE[r.status].label}
-                    </span>
+                    (() => {
+                      const style = STATUS_STYLE[r.status] || STATUS_STYLE.IN_REVIEW;
+                      return (
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${style.cls}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${style.dot} animate-pulse`} />
+                          {style.label}
+                        </span>
+                      );
+                    })()
                   )}
                 </div>
               </li>
