@@ -14,12 +14,20 @@ export async function POST(request) {
     
     // Handle results coming from the software apps
     if (data.code && data.status) {
-      if (["SUSPICIOUS", "LIVE_CHAT"].includes(data.status)) {
-        await prisma.trackingCode.update({
-          where: { code: data.code },
-          data: { overrideStatus: data.status }
-        });
-      }
+      // Upsert tracking code to ensure it exists and update overrideStatus
+      await prisma.trackingCode.upsert({
+        where: { code: data.code },
+        update: { overrideStatus: data.status },
+        create: { code: data.code, overrideStatus: data.status },
+      });
+
+      // Create a submission record so it appears in user and admin history
+      await prisma.trackingSubmission.create({
+        data: {
+          userId: user.id,
+          code: data.code,
+        },
+      });
     }
     
     return NextResponse.json({ 
@@ -27,6 +35,7 @@ export async function POST(request) {
       message: "Results received successfully." 
     });
   } catch (error) {
-    return NextResponse.json({ error: "Invalid request payload" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid request payload or processing failed" }, { status: 400 });
   }
 }
+
