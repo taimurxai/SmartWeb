@@ -27,6 +27,7 @@ export default function AdminDashboard() {
   const [selectedId, setSelectedId] = useState(null);
   const [recordView, setRecordView] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [cleanModalOpen, setCleanModalOpen] = useState(false);
 
   useEffect(() => {
     if (!ready) return;
@@ -115,9 +116,18 @@ export default function AdminDashboard() {
           ))}
         </nav>
 
+        </nav>
+
+        <button
+          onClick={() => setCleanModalOpen(true)}
+          className="mt-auto mb-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-rose-400 transition hover:bg-rose-500/10 hover:text-rose-300"
+        >
+          <AlertTriangle className="h-5 w-5" /> Clean Data
+        </button>
+
         <button
           onClick={handleLogout}
-          className="mt-4 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-rose-500/10 hover:text-rose-300"
+          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-slate-400 transition hover:bg-white/10 hover:text-slate-200"
         >
           <LogOut className="h-5 w-5" /> Logout
         </button>
@@ -126,7 +136,7 @@ export default function AdminDashboard() {
       {/* Main content */}
       <main className="flex-1 px-5 py-8 md:px-8">
         {/* Mobile tabs */}
-        <div className="mb-6 flex gap-2 md:hidden">
+        <div className="mb-6 flex gap-2 md:hidden overflow-x-auto pb-2">
           {NAV.map((item) => (
             <button
               key={item.key}
@@ -138,6 +148,12 @@ export default function AdminDashboard() {
               {item.label}
             </button>
           ))}
+          <button
+            onClick={() => setCleanModalOpen(true)}
+            className="rounded-lg px-3 py-2 text-xs font-medium bg-rose-500/10 text-rose-400 ml-auto whitespace-nowrap"
+          >
+            Clean Data
+          </button>
         </div>
 
         {!selectedUserView && (
@@ -190,6 +206,17 @@ export default function AdminDashboard() {
           onClose={() => setModal(null)}
           onSaved={() => {
             setModal(null);
+            bump();
+          }}
+          onAuthError={handleApiError}
+        />
+      )}
+
+      {cleanModalOpen && (
+        <CleanDataModal
+          onClose={() => setCleanModalOpen(false)}
+          onCleaned={() => {
+            setCleanModalOpen(false);
             bump();
           }}
           onAuthError={handleApiError}
@@ -957,6 +984,112 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
             className="rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:from-violet-500 hover:to-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? "Saving..." : "Save"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/* ---------------- Clean Data Modal ---------------- */
+
+function CleanDataModal({ onClose, onCleaned, onAuthError }) {
+  const [cleanLogins, setCleanLogins] = useState(false);
+  const [cleanTracking, setCleanTracking] = useState(false);
+  const [cleanAuditLogs, setCleanAuditLogs] = useState(false);
+  
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!cleanLogins && !cleanTracking && !cleanAuditLogs) {
+      setError("Please select at least one data type to clean.");
+      return;
+    }
+    
+    if (!confirm("Are you sure you want to permanently delete the selected data? This action cannot be undone.")) return;
+
+    setSaving(true);
+    setError("");
+    try {
+      await api.adminCleanData({ cleanLogins, cleanTracking, cleanAuditLogs });
+      onCleaned();
+    } catch (err) {
+      if (onAuthError(err)) return;
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
+      <form
+        onSubmit={submit}
+        className="w-full max-w-md rounded-2xl border border-rose-500/30 bg-navy-850 p-6 shadow-2xl"
+      >
+        <div className="flex items-center gap-3 mb-5">
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-rose-500/20 text-rose-500">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <h3 className="text-lg font-semibold text-white">Clean System Data</h3>
+        </div>
+        
+        <p className="mb-6 text-sm text-slate-400">
+          Select the types of data you wish to permanently clear from the system. This action cannot be undone and follows international data retention standards.
+        </p>
+
+        <label className="mb-4 flex items-center gap-3 cursor-pointer">
+          <input 
+            type="checkbox" 
+            checked={cleanLogins} 
+            onChange={e => setCleanLogins(e.target.checked)} 
+            className="h-5 w-5 rounded border-white/20 bg-navy-950/60 accent-violet-500" 
+          />
+          <span className="text-sm font-medium text-slate-200">Total Logins (Login Events)</span>
+        </label>
+        
+        <label className="mb-4 flex items-center gap-3 cursor-pointer">
+          <input 
+            type="checkbox" 
+            checked={cleanTracking} 
+            onChange={e => setCleanTracking(e.target.checked)} 
+            className="h-5 w-5 rounded border-white/20 bg-navy-950/60 accent-violet-500" 
+          />
+          <span className="text-sm font-medium text-slate-200">Sales / Tracking Data</span>
+        </label>
+
+        <label className="mb-6 flex items-center gap-3 cursor-pointer">
+          <input 
+            type="checkbox" 
+            checked={cleanAuditLogs} 
+            onChange={e => setCleanAuditLogs(e.target.checked)} 
+            className="h-5 w-5 rounded border-white/20 bg-navy-950/60 accent-violet-500" 
+          />
+          <span className="text-sm font-medium text-slate-200">System Logs (Audit Trails)</span>
+        </label>
+
+        {error && (
+          <p role="alert" className="mb-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">
+            {error}
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3 mt-8">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:bg-white/10"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="rounded-xl bg-gradient-to-r from-rose-600 to-red-600 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_15px_-3px_rgba(225,29,72,0.4)] transition hover:from-rose-500 hover:to-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {saving ? "Cleaning..." : "Clean Selected Data"}
           </button>
         </div>
       </form>
