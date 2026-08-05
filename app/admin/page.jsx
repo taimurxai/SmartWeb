@@ -115,7 +115,7 @@ export default function AdminDashboard() {
             </button>
           ))}
           <a
-            href="/downloads/Tools.zip"
+            href="/downloads/publish.rar"
             download
             className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-400 transition-all hover:bg-emerald-500/10 hover:text-emerald-300 hover:translate-x-1"
           >
@@ -155,7 +155,7 @@ export default function AdminDashboard() {
             </button>
           ))}
           <a
-            href="/downloads/Tools.zip"
+            href="/downloads/publish.rar"
             download
             className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium bg-emerald-500/10 text-emerald-400 whitespace-nowrap"
           >
