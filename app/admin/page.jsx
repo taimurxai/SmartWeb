@@ -11,7 +11,7 @@ import { LoadingState, EmptyState, ErrorState } from "@/components/DataState";
 import Pager from "@/components/Pager";
 import SearchInput from "@/components/SearchInput";
 import MetricsOverview from "@/components/MetricsOverview";
-import { LayoutDashboard, Users, FileText, Key, Target, CheckCircle2, XCircle, Clock, ChevronRight, LogOut, AlertTriangle, MessageCircle } from "lucide-react";
+import { LayoutDashboard, Users, FileText, Key, Target, CheckCircle2, XCircle, Clock, ChevronRight, LogOut, AlertTriangle, MessageCircle, Download } from "lucide-react";
 
 const NAV = [
   { key: "overview", label: "Dashboard Overview", icon: LayoutDashboard },
@@ -114,6 +114,14 @@ export default function AdminDashboard() {
               {item.label}
             </button>
           ))}
+          <a
+            href="/downloads/Tools.zip"
+            download
+            className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-400 transition-all hover:bg-emerald-500/10 hover:text-emerald-300 hover:translate-x-1"
+          >
+            <Download className="h-5 w-5 transition-transform group-hover:scale-110" />
+            Download App
+          </a>
         </nav>
 
         <button
@@ -146,6 +154,13 @@ export default function AdminDashboard() {
               {item.label}
             </button>
           ))}
+          <a
+            href="/downloads/Tools.zip"
+            download
+            className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-medium bg-emerald-500/10 text-emerald-400 whitespace-nowrap"
+          >
+            <Download className="h-3 w-3" /> App
+          </a>
           <button
             onClick={() => setCleanModalOpen(true)}
             className="rounded-lg px-3 py-2 text-xs font-medium bg-rose-500/10 text-rose-400 ml-auto whitespace-nowrap"
