@@ -14,8 +14,8 @@ export const POST = withAuth(async (request, { user }) => {
   }
 
   const code = normalizeCode(body.input);
-  if (code.length < 15 || code.length > 16) {
-    return NextResponse.json({ error: "Code must be 15 or 16 alphanumeric characters." }, { status: 400 });
+  if (code.length < 15 || code.length > 50) {
+    return NextResponse.json({ error: "Code must be between 15 and 50 characters." }, { status: 400 });
   }
 
   const trackingCode = await prisma.trackingCode.upsert({

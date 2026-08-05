@@ -110,7 +110,7 @@ export default function UserDashboard() {
           className="rounded-2xl border border-white/10 bg-navy-900/60 p-8 shadow-xl backdrop-blur-xl transition-all hover:border-violet-500/30 animate-fade-in-up animate-delay-100"
         >
           <label className="mb-3 block text-sm font-semibold tracking-wide text-slate-300 uppercase" htmlFor="track-code">
-            Enter tracking URL or 15/16-digit code
+            Enter tracking URL or code (15-50 chars)
           </label>
           <div className="flex flex-col gap-4 sm:flex-row">
             <input
