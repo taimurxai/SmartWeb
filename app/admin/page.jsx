@@ -115,7 +115,7 @@ export default function AdminDashboard() {
             </button>
           ))}
           <a
-            href="/downloads/publish.rar"
+            href="/downloads/SmartAgeVerification.rar"
             download
             className="group flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-slate-400 transition-all hover:bg-emerald-500/10 hover:text-emerald-300 hover:translate-x-1"
           >
