@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/audit";
 import { checkRateLimit } from "@/lib/rateLimit";
+import { withAuth } from "@/lib/rbac";
 import { getClientIp } from "@/lib/device";
 
 const VERIFY_MAX_ATTEMPTS = 5;
@@ -10,7 +11,7 @@ const VERIFY_WINDOW_MS = 15 * 60 * 1000;
 
 export const dynamic = "force-dynamic";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, { user }) => {
   const ip = getClientIp(request);
   const ipLimit = await checkRateLimit(`device-verify:ip:${ip}`, {
     max: VERIFY_MAX_ATTEMPTS * 2,
@@ -22,12 +23,6 @@ export async function POST(request) {
       { error: "Too many verification attempts from this IP. Please try again later." },
       { status: 429 }
     );
-  }
-
-  const user = await getSessionUser();
-
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   if (user.status === "FROZEN") {
@@ -115,4 +110,4 @@ export async function POST(request) {
       email: user.email
     }
   });
-}
+});

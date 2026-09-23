@@ -20,6 +20,11 @@ export const POST = withAdmin(async (request, { params, user: admin }) => {
 
   if (!updated) return NextResponse.json({ error: "User not found." }, { status: 404 });
 
-  await writeAuditLog({ actorId: admin.id, event: `User device binding reset: ${updated.email}`, level: "info" });
+  // Clear any existing sessions so the user is logged out of old devices
+  await prisma.session.deleteMany({
+    where: { userId: id }
+  }).catch(() => null);
+
+  await writeAuditLog({ actorId: admin.id, event: `User device binding and sessions reset: ${updated.email}`, level: "info" });
   return NextResponse.json({ ok: true });
 });

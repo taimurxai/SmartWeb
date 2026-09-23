@@ -11,6 +11,6 @@ export async function GET(request) {
   return NextResponse.json({
     minimumVersion: "2026.8.6",
     latestVersion: "2026.8.6",
-    downloadUrl: `${baseUrl}/downloads/SmartAgeVerification.rar`,
+    downloadUrl: `${baseUrl}/downloads/AgeSmartEnterprise.exe`,
   });
 }

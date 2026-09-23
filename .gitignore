@@ -16,3 +16,5 @@ npm-debug.log*
 /dev.db-wal
 /dev.db-shm
 public/downloads/
+.vercel
+.env*

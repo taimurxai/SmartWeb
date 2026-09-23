@@ -118,7 +118,7 @@ export default function AdminDashboard() {
             );
           })}
           <a
-            href="/downloads/SmartAgeVerification.rar"
+            href="/downloads/AgeSmartEnterprise.exe"
             download
             className="group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-400 transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
           >
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
             className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-rose-400 transition hover:bg-rose-500/10"
           >
             <AlertTriangle className="h-4 w-4" />
-            <span>Clean System Data</span>
+            <span>System Log Clear</span>
           </button>
 
           <button
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
             </button>
           ))}
           <a
-            href="/downloads/SmartAgeVerification.rar"
+            href="/downloads/AgeSmartEnterprise.exe"
             download
             className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-emerald-500/10 text-emerald-400 whitespace-nowrap"
           >
@@ -172,7 +172,7 @@ export default function AdminDashboard() {
             onClick={() => setCleanModalOpen(true)}
             className="rounded-lg px-2.5 py-1.5 text-xs font-medium bg-rose-500/10 text-rose-400 ml-auto whitespace-nowrap"
           >
-            Clean
+            Clear Log
           </button>
         </div>
 
@@ -623,18 +623,16 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                       </td>
                       <td className="px-4 py-2.5">
                         <div className="flex justify-end gap-1.5">
-                          {u.deviceHash && (
-                            <button
-                              disabled={busy}
-                              title="Reset bound device"
-                              onClick={() => {
-                                if (confirm(`Reset device binding for ${u.name}?`)) withBusy(u.id, () => api.adminResetDevice(u.id));
-                              }}
-                              className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-brand-300 disabled:cursor-not-allowed disabled:opacity-40"
-                            >
-                              Reset
-                            </button>
-                          )}
+                          <button
+                            disabled={busy}
+                            title="Reset device binding and sessions"
+                            onClick={() => {
+                              if (confirm(`Reset device binding and sessions for ${u.name}?`)) withBusy(u.id, () => api.adminResetDevice(u.id));
+                            }}
+                            className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-brand-300 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            Reset
+                          </button>
                           <button
                             onClick={() => onEdit(u)}
                             className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
@@ -708,17 +706,15 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center justify-end gap-1.5 pt-1">
-                    {u.deviceHash && (
-                      <button
-                        disabled={busy}
-                        onClick={() => {
-                          if (confirm(`Reset device binding for ${u.name}?`)) withBusy(u.id, () => api.adminResetDevice(u.id));
-                        }}
-                        className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 hover:bg-white/10"
-                      >
-                        Reset Device
-                      </button>
-                    )}
+                    <button
+                      disabled={busy}
+                      onClick={() => {
+                        if (confirm(`Reset device binding and sessions for ${u.name}?`)) withBusy(u.id, () => api.adminResetDevice(u.id));
+                      }}
+                      className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 hover:bg-white/10"
+                    >
+                      Reset Device
+                    </button>
                     <button
                       onClick={() => onEdit(u)}
                       className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 hover:bg-white/10"
@@ -1133,7 +1129,7 @@ function CleanDataModal({ onClose, onCleaned, onAuthError }) {
           <div className="grid h-8 w-8 place-items-center rounded-lg bg-rose-500/20 text-rose-400">
             <AlertTriangle className="h-4 w-4" />
           </div>
-          <h3 className="text-sm font-semibold text-white">Clean System Data</h3>
+          <h3 className="text-sm font-semibold text-white">System Log Clear</h3>
         </div>
         
         <p className="mb-4 text-xs text-slate-400">
