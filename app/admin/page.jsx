@@ -11,6 +11,7 @@ import { LoadingState, EmptyState, ErrorState } from "@/components/DataState";
 import Pager from "@/components/Pager";
 import SearchInput from "@/components/SearchInput";
 import MetricsOverview from "@/components/MetricsOverview";
+import AnimatedCounter from "@/components/AnimatedCounter";
 import { LayoutDashboard, Users, FileText, Key, Target, CheckCircle2, XCircle, Clock, ChevronRight, LogOut, AlertTriangle, MessageCircle, Download } from "lucide-react";
 
 const NAV = [
@@ -89,14 +90,14 @@ export default function AdminDashboard() {
   const selectedUserView = Boolean(selectedId);
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-200">
+    <div className="flex min-h-screen bg-surface-secondary text-text-primary">
       {/* Sidebar */}
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-slate-800/80 bg-slate-950/80 p-4 backdrop-blur-md md:flex">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-border-subtle bg-surface-secondary p-4 backdrop-blur-md md:flex">
         <div className="mb-6 flex items-center gap-2.5 px-2">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-blue-600 shadow-sm text-white font-bold text-sm">
+          <div className="grid h-8 w-8 place-items-center rounded-sm bg-accent shadow-sm text-text-primary font-bold text-sm">
             D
           </div>
-          <span className="text-sm font-semibold tracking-tight text-white">Dashboard Admin</span>
+          <span className="text-sm font-semibold tracking-tight text-text-primary">Dashboard Admin</span>
         </div>
 
         <nav className="flex-1 space-y-1">
@@ -106,13 +107,13 @@ export default function AdminDashboard() {
               <button
                 key={item.key}
                 onClick={() => handleNav(item.key)}
-                className={`group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                className={`group flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-xs font-medium transition-all ${
                   active
-                    ? "bg-blue-600/15 text-blue-400 border border-blue-500/30"
-                    : "text-slate-400 hover:bg-slate-900 hover:text-slate-200"
+                    ? "bg-blue-600/15 text-info border border-blue-500/30"
+                    : "text-text-muted hover:bg-surface-secondary hover:text-text-primary"
                 }`}
               >
-                <item.icon className={`h-4 w-4 transition-transform ${active ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300"}`} />
+                <item.icon className={`h-4 w-4 transition-transform ${active ? "text-info" : "text-text-faint group-hover:text-text-primary"}`} />
                 <span>{item.label}</span>
               </button>
             );
@@ -120,17 +121,17 @@ export default function AdminDashboard() {
           <a
             href="/downloads/AgeSmartEnterprise.exe"
             download
-            className="group flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-400 transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
+            className="group flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-xs font-medium text-text-muted transition-all hover:bg-emerald-500/10 hover:text-emerald-400"
           >
-            <Download className="h-4 w-4 text-emerald-500" />
+            <Download className="h-4 w-4 text-success" />
             <span>Download Client</span>
           </a>
         </nav>
 
-        <div className="mt-auto space-y-1 border-t border-slate-800/80 pt-3">
+        <div className="mt-auto space-y-1 border-t border-border-subtle pt-3">
           <button
             onClick={() => setCleanModalOpen(true)}
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-rose-400 transition hover:bg-rose-500/10"
+            className="flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-xs font-medium text-error transition hover:bg-rose-500/10"
           >
             <AlertTriangle className="h-4 w-4" />
             <span>System Log Clear</span>
@@ -138,7 +139,7 @@ export default function AdminDashboard() {
 
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-400 transition hover:bg-slate-900 hover:text-slate-200"
+            className="flex w-full items-center gap-2.5 rounded-sm px-3 py-2 text-xs font-medium text-text-muted transition hover:bg-surface-secondary hover:text-text-primary"
           >
             <LogOut className="h-4 w-4" />
             <span>Logout</span>
@@ -154,8 +155,8 @@ export default function AdminDashboard() {
             <button
               key={item.key}
               onClick={() => handleNav(item.key)}
-              className={`rounded-lg px-2.5 py-1.5 text-xs font-medium ${
-                tab === item.key ? "bg-blue-600/20 text-blue-300 border border-blue-500/30" : "bg-slate-900 text-slate-400"
+              className={`rounded-sm px-2.5 py-1.5 text-xs font-medium ${
+                tab === item.key ? "bg-blue-600/20 text-blue-300 border border-blue-500/30" : "bg-surface-primary text-text-muted"
               }`}
             >
               {item.label}
@@ -164,13 +165,13 @@ export default function AdminDashboard() {
           <a
             href="/downloads/AgeSmartEnterprise.exe"
             download
-            className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium bg-emerald-500/10 text-emerald-400 whitespace-nowrap"
+            className="flex items-center gap-1 rounded-sm px-2.5 py-1.5 text-xs font-medium bg-emerald-500/10 text-success whitespace-nowrap"
           >
             <Download className="h-3 w-3" /> App
           </a>
           <button
             onClick={() => setCleanModalOpen(true)}
-            className="rounded-lg px-2.5 py-1.5 text-xs font-medium bg-rose-500/10 text-rose-400 ml-auto whitespace-nowrap"
+            className="rounded-sm px-2.5 py-1.5 text-xs font-medium bg-rose-500/10 text-error ml-auto whitespace-nowrap"
           >
             Clear Log
           </button>
@@ -178,10 +179,10 @@ export default function AdminDashboard() {
 
         {!selectedUserView && (
           <div className="mb-6 animate-fade-in">
-            <h1 className="text-xl font-bold tracking-tight text-white">
+            <h1 className="text-xl font-bold tracking-tight text-text-primary">
               {recordView ? RECORD_META[recordView].title : NAV.find((n) => n.key === tab)?.label}
             </h1>
-            <p className="mt-0.5 text-xs text-slate-400">
+            <p className="mt-0.5 text-xs text-text-muted">
               {recordView ? RECORD_META[recordView].subtitle : `Administrative control panel · Logged in as ${user.name}`}
             </p>
           </div>
@@ -251,9 +252,9 @@ export default function AdminDashboard() {
 function SummaryCard({ label, value, accent, icon: Icon, hint, onClick }) {
   const ACCENT_STYLES = {
     violet: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20 group-hover:border-indigo-500/40",
-    blue: "bg-blue-500/10 text-blue-400 border-blue-500/20 group-hover:border-blue-500/40",
-    emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 group-hover:border-emerald-500/40",
-    rose: "bg-rose-500/10 text-rose-400 border-rose-500/20 group-hover:border-rose-500/40",
+    blue: "bg-blue-500/10 text-info border-blue-500/20 group-hover:border-blue-500/40",
+    emerald: "bg-emerald-500/10 text-success border-emerald-500/20 group-hover:border-emerald-500/40",
+    rose: "bg-rose-500/10 text-error border-rose-500/20 group-hover:border-rose-500/40",
     amber: "bg-amber-500/10 text-amber-400 border-amber-500/20 group-hover:border-amber-500/40",
   };
 
@@ -262,29 +263,29 @@ function SummaryCard({ label, value, accent, icon: Icon, hint, onClick }) {
   return (
     <button
       onClick={onClick}
-      className="group relative overflow-hidden rounded-xl border border-slate-800/90 bg-slate-900/70 p-3.5 text-left shadow-card backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-slate-900/90 hover:border-slate-700"
+      className="group relative overflow-hidden rounded-md border border-border-subtle bg-surface-primary p-3.5 text-left shadow-sm backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:bg-surface-secondary hover:border-border-subtle"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg border transition-transform duration-200 group-hover:scale-105 ${style}`}>
+          <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-sm border transition-transform duration-200 group-hover:scale-105 ${style}`}>
             <Icon className="h-4 w-4" strokeWidth={2.2} />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-white group-hover:text-blue-400 transition-colors truncate">
+            <p className="text-xs font-semibold text-text-primary group-hover:text-blue-400 transition-colors truncate">
               {label}
             </p>
             {hint && (
-              <p className="text-[11px] text-slate-400/90 truncate">
+              <p className="text-[11px] text-text-secondary/90 truncate">
                 {hint}
               </p>
             )}
           </div>
         </div>
-        <ChevronRight className="h-4 w-4 shrink-0 text-slate-600 transition-colors group-hover:text-slate-300 mt-1" />
+        <ChevronRight className="h-4 w-4 shrink-0 text-text-tertiary transition-colors group-hover:text-text-primary mt-1" />
       </div>
-      <div className="mt-3 pt-2 border-t border-slate-800/50 flex items-baseline justify-between">
-        <p className="text-2xl font-bold tracking-tight text-white font-sans">
-          {typeof value === "number" ? value.toLocaleString("en-US") : value}
+      <div className="mt-3 pt-2 border-t border-border-faint flex items-baseline justify-between">
+        <p className="text-2xl font-bold tracking-tight text-text-primary font-sans">
+          <AnimatedCounter value={value} />
         </p>
       </div>
     </button>
@@ -327,13 +328,15 @@ function OverviewSection({ onCard, onAuthError, refreshKey }) {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {cards.map((c) => (
-          <SummaryCard key={c.type} {...c} onClick={() => onCard(c.type)} />
+        {cards.map((c, idx) => (
+          <div key={c.type} className="animate-fade-in-up" style={{ animationDelay: `${idx * 50}ms` }}>
+            <SummaryCard {...c} onClick={() => onCard(c.type)} />
+          </div>
         ))}
       </div>
 
       <div>
-        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Live Real-time Metrics</h2>
+        <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-text-muted">Live Real-time Metrics</h2>
         <MetricsOverview />
       </div>
     </div>
@@ -367,14 +370,14 @@ function fmtDate(d) {
 function UserChip({ userId, userName, email, onOpenUser }) {
   return (
     <button onClick={() => onOpenUser(userId)} className="group flex items-center gap-2.5 text-left">
-      <div className="grid h-7 w-7 place-items-center rounded-full bg-slate-800 text-[11px] font-semibold text-blue-400 border border-slate-700">
+      <div className="grid h-7 w-7 place-items-center rounded-full bg-surface-primary text-[11px] font-semibold text-info border border-border-subtle">
         {userName?.[0]?.toUpperCase()}
       </div>
       <div>
-        <p className="text-xs font-medium text-white group-hover:text-blue-400 group-hover:underline">
+        <p className="text-xs font-medium text-text-primary group-hover:text-blue-400 group-hover:underline">
           {userName}
         </p>
-        <p className="text-[11px] text-slate-500">{email}</p>
+        <p className="text-[11px] text-text-faint">{email}</p>
       </div>
     </button>
   );
@@ -415,7 +418,7 @@ function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2.5">
         <button
           onClick={onBack}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+          className="inline-flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-primary px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:bg-surface-secondary hover:text-text-primary"
         >
           ← Back to Overview
         </button>
@@ -426,29 +429,29 @@ function RecordsView({ type, onOpenUser, onBack, onAuthError }) {
       {!error && !data && <LoadingState label="Loading records..." />}
 
       {!error && data && (
-        <div className="overflow-hidden rounded-xl border border-slate-800/90 bg-slate-900/70 shadow-card backdrop-blur-md">
-          <div className="flex items-center justify-between border-b border-slate-800/80 px-4 py-3">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-300">{meta.title}</h2>
-            <span className="rounded-md bg-slate-800 px-2 py-0.5 text-[11px] font-medium text-slate-300">
+        <div className="overflow-hidden rounded-md border border-border-subtle bg-surface-primary shadow-sm backdrop-blur-md">
+          <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-text-secondary">{meta.title}</h2>
+            <span className="rounded-md bg-surface-primary px-2 py-0.5 text-[11px] font-medium text-text-secondary">
               {data.total.toLocaleString("en-US")} total
             </span>
           </div>
 
           <ul className="divide-y divide-slate-800/60">
             {data.rows.map((r) => (
-              <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-slate-800/40">
+              <li key={r.id} className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 transition-colors hover:bg-surface-secondary">
                 <div className="flex flex-col gap-0.5">
                   <UserChip userId={r.userId} userName={r.userName} email={r.email} onOpenUser={onOpenUser} />
                   {!isLogin && r.code && (
-                    <span className="text-[11px] text-slate-400 pl-9">
-                      Code: <span className="font-mono text-slate-300">{r.code}</span>
+                    <span className="text-[11px] text-text-muted pl-9">
+                      Code: <span className="font-mono text-text-secondary">{r.code}</span>
                     </span>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-xs text-white">{fmtDate(r.time)}</p>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-xs text-text-primary">{fmtDate(r.time)}</p>
+                    <p className="text-[11px] text-text-faint">
                       {new Date(r.time).toLocaleTimeString("en-GB")}
                       {isLogin ? ` · ${r.browser || "—"} · ${r.os || "—"}` : ""}
                     </p>
@@ -494,7 +497,7 @@ function SortHeader({ label, sortKey, sort, order, onSort }) {
     <th className="px-6 py-3 font-medium">
       <button
         onClick={() => onSort(sortKey)}
-        className={`flex items-center gap-1 transition hover:text-slate-200 ${active ? "text-violet-300" : ""}`}
+        className={`flex items-center gap-1 transition hover:text-text-primary ${active ? "text-violet-300" : ""}`}
       >
         {label}
         {active && <span className="text-[10px]">{order === "asc" ? "▲" : "▼"}</span>}
@@ -562,14 +565,14 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
         <SearchInput value={rawQ} onChange={setRawQ} placeholder="Search name or email..." />
         <button
           onClick={onAdd}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-500 active:scale-[0.98]"
+          className="inline-flex items-center gap-1.5 rounded-sm bg-accent px-3.5 py-1.5 text-xs font-semibold text-text-primary shadow-sm transition hover:bg-blue-500 active:scale-[0.98]"
         >
           + Add User
         </button>
       </div>
 
       {actionError && (
-        <p role="alert" className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-300">
+        <p role="alert" className="mb-3 rounded-sm border border-rose-500/30 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-300">
           {actionError}
         </p>
       )}
@@ -578,12 +581,12 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
       {!error && !data && <LoadingState label="Loading users..." />}
 
       {!error && data && (
-        <div className="rounded-xl border border-white/5 glass-panel shadow-card overflow-hidden">
+        <div className="rounded-md border border-border-subtle bg-surface-primary shadow-sm overflow-hidden">
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-white/5 bg-black/20 text-[11px] uppercase tracking-wider text-slate-400 font-mono">
+                <tr className="border-b border-border-subtle bg-surface-secondary text-[11px] uppercase tracking-wider text-text-muted font-mono">
                   <SortHeader label="User Name" sortKey="name" sort={sort} order={order} onSort={toggleSort} />
                   <SortHeader label="Email" sortKey="email" sort={sort} order={order} onSort={toggleSort} />
                   <SortHeader label="Role" sortKey="role" sort={sort} order={order} onSort={toggleSort} />
@@ -597,22 +600,22 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                   const self = u.id === currentUserId;
                   const busy = busyId === u.id;
                   return (
-                    <tr key={u.id} className="transition-colors hover:bg-white/[0.02]">
+                    <tr key={u.id} className="transition-colors hover:bg-surface-secondary">
                       <td className="px-4 py-2.5">
                         <button onClick={() => onOpen(u)} className="flex items-center gap-2.5 text-left">
                           <div className="grid h-7 w-7 place-items-center rounded-full bg-brand-500/10 border border-brand-500/20 text-[11px] font-semibold text-brand-400">
                             {u.name?.[0]?.toUpperCase()}
                           </div>
-                          <span className="font-medium text-white hover:text-brand-400 hover:underline">
+                          <span className="font-medium text-text-primary hover:text-brand-400 hover:underline">
                             {u.name}
                           </span>
                         </button>
                       </td>
-                      <td className="px-4 py-2.5 text-slate-300 font-mono">{u.email}</td>
+                      <td className="px-4 py-2.5 text-text-secondary font-mono">{u.email}</td>
                       <td className="px-4 py-2.5">
                         <span
                           className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${
-                            u.role === "ADMIN" ? "bg-brand-500/10 text-brand-300 border border-brand-500/20" : "bg-white/5 text-slate-400 border border-white/10"
+                            u.role === "ADMIN" ? "bg-brand-500/10 text-accent border border-brand-500/20" : "bg-surface-primary text-text-muted border border-border-subtle"
                           }`}
                         >
                           {u.role === "ADMIN" ? "Admin" : "Normal"}
@@ -629,13 +632,13 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                             onClick={() => {
                               if (confirm(`Reset device binding and sessions for ${u.name}?`)) withBusy(u.id, () => api.adminResetDevice(u.id));
                             }}
-                            className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-brand-300 disabled:cursor-not-allowed disabled:opacity-40"
+                            className="rounded border border-border-subtle bg-surface-primary px-2 py-1 text-[11px] font-medium text-text-secondary transition hover:bg-surface-secondary hover:text-brand-300 disabled:cursor-not-allowed disabled:opacity-40"
                           >
                             Reset
                           </button>
                           <button
                             onClick={() => onEdit(u)}
-                            className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
+                            className="rounded border border-border-subtle bg-surface-primary px-2 py-1 text-[11px] font-medium text-text-secondary transition hover:bg-surface-secondary hover:text-text-primary"
                           >
                             Edit
                           </button>
@@ -694,12 +697,12 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                         {u.name?.[0]?.toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-semibold text-white text-xs">{u.name}</p>
-                        <p className="font-mono text-[11px] text-slate-400">{u.email}</p>
+                        <p className="font-semibold text-text-primary text-xs">{u.name}</p>
+                        <p className="font-mono text-[11px] text-text-muted">{u.email}</p>
                       </div>
                     </button>
                     <div className="flex items-center gap-1.5">
-                      <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${u.role === "ADMIN" ? "bg-brand-500/10 text-brand-300 border border-brand-500/20" : "bg-white/5 text-slate-400"}`}>
+                      <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-medium ${u.role === "ADMIN" ? "bg-brand-500/10 text-accent border border-brand-500/20" : "bg-surface-primary text-text-muted"}`}>
                         {u.role}
                       </span>
                       <FreezeStatusBadge status={u.status} />
@@ -711,13 +714,13 @@ function UsersSection({ currentUserId, onOpen, onAdd, onEdit, onAuthError, onCha
                       onClick={() => {
                         if (confirm(`Reset device binding and sessions for ${u.name}?`)) withBusy(u.id, () => api.adminResetDevice(u.id));
                       }}
-                      className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 hover:bg-white/10"
+                      className="rounded border border-border-subtle bg-surface-primary px-2 py-1 text-[11px] font-medium text-text-secondary hover:bg-surface-secondary"
                     >
                       Reset Device
                     </button>
                     <button
                       onClick={() => onEdit(u)}
-                      className="rounded border border-white/10 bg-white/5 px-2 py-1 text-[11px] font-medium text-slate-300 hover:bg-white/10"
+                      className="rounded border border-border-subtle bg-surface-primary px-2 py-1 text-[11px] font-medium text-text-secondary hover:bg-surface-secondary"
                     >
                       Edit
                     </button>
@@ -770,7 +773,7 @@ function FreezeStatusBadge({ status }) {
   return (
     <span
       className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
-        frozen ? "bg-rose-500/10 text-rose-400 border-rose-500/25" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/25"
+        frozen ? "bg-rose-500/10 text-error border-rose-500/25" : "bg-emerald-500/10 text-success border-emerald-500/25"
       }`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${frozen ? "bg-rose-400" : "bg-emerald-400"}`} />
@@ -803,7 +806,7 @@ function UserDetail({ userId, onBack, onAuthError }) {
   const BackButton = (
     <button
       onClick={onBack}
-      className="mb-4 inline-flex items-center gap-1.5 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+      className="mb-4 inline-flex items-center gap-1.5 rounded-sm border border-border-subtle bg-surface-primary px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:bg-surface-secondary hover:text-text-primary"
     >
       ← Back to User List
     </button>
@@ -834,18 +837,18 @@ function UserDetail({ userId, onBack, onAuthError }) {
     <div className="animate-fade-in">
       {BackButton}
 
-      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-xl border border-slate-800/90 bg-slate-900/70 p-4 shadow-card backdrop-blur-md">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-blue-600 text-base font-bold text-white shadow-sm">
+      <div className="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-border-subtle bg-surface-primary p-4 shadow-sm backdrop-blur-md">
+        <div className="grid h-10 w-10 place-items-center rounded-md bg-accent text-base font-bold text-text-primary shadow-sm">
           {user.name?.[0]?.toUpperCase()}
         </div>
         <div className="flex-1">
-          <h2 className="text-base font-bold text-white">{user.name}</h2>
-          <p className="text-xs text-slate-400">{user.email}</p>
+          <h2 className="text-base font-bold text-text-primary">{user.name}</h2>
+          <p className="text-xs text-text-muted">{user.email}</p>
         </div>
         <div className="flex items-center gap-2">
           <span
             className={`rounded-md px-2 py-0.5 text-[11px] font-medium ${
-              user.role === "ADMIN" ? "bg-blue-500/10 text-blue-300 border border-blue-500/20" : "bg-slate-800 text-slate-400 border border-slate-700"
+              user.role === "ADMIN" ? "bg-blue-500/10 text-blue-300 border border-blue-500/20" : "bg-surface-primary text-text-muted border border-border-subtle"
             }`}
           >
             {user.role === "ADMIN" ? "Admin" : "Normal"}
@@ -914,28 +917,28 @@ function LogsSection({ onAuthError }) {
           value={level}
           onChange={(e) => setLevel(e.target.value)}
           aria-label="Level filter"
-          className="rounded-lg border border-slate-800 bg-slate-950/70 px-2.5 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
+          className="rounded-sm border border-border-subtle bg-surface-secondary px-2.5 py-1.5 text-xs text-text-primary outline-none focus:border-accent"
         >
           <option value="">All levels</option>
           <option value="info">Info</option>
           <option value="error">Error</option>
         </select>
-        <label className="flex items-center gap-1.5 text-xs text-slate-400">
+        <label className="flex items-center gap-1.5 text-xs text-text-muted">
           From
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="rounded-lg border border-slate-800 bg-slate-950/70 px-2 py-1 text-xs text-white outline-none focus:border-blue-500/60"
+            className="rounded-sm border border-border-subtle bg-surface-secondary px-2 py-1 text-xs text-text-primary outline-none focus:border-accent"
           />
         </label>
-        <label className="flex items-center gap-1.5 text-xs text-slate-400">
+        <label className="flex items-center gap-1.5 text-xs text-text-muted">
           To
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="rounded-lg border border-slate-800 bg-slate-950/70 px-2 py-1 text-xs text-white outline-none focus:border-blue-500/60"
+            className="rounded-sm border border-border-subtle bg-surface-secondary px-2 py-1 text-xs text-text-primary outline-none focus:border-accent"
           />
         </label>
       </div>
@@ -944,14 +947,14 @@ function LogsSection({ onAuthError }) {
       {!error && !data && <LoadingState label="Loading system logs..." />}
 
       {!error && data && (
-        <div className="rounded-xl border border-slate-800/90 bg-slate-900/70 shadow-card backdrop-blur-md overflow-hidden">
+        <div className="rounded-md border border-border-subtle bg-surface-primary shadow-sm backdrop-blur-md overflow-hidden">
           <ul className="divide-y divide-slate-800/60">
             {data.logs.map((log) => (
-              <li key={log.id} className="flex items-start gap-2.5 px-4 py-2.5 hover:bg-slate-800/30 transition-colors">
+              <li key={log.id} className="flex items-start gap-2.5 px-4 py-2.5 hover:bg-surface-secondary/30 transition-colors">
                 <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${dot[log.level] || dot.info}`} />
                 <div className="flex-1">
-                  <p className="text-xs text-slate-200">{log.event}</p>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-xs text-text-primary">{log.event}</p>
+                  <p className="text-[11px] text-text-faint">
                     {log.actor} · {new Date(log.time).toLocaleString("en-GB")}
                   </p>
                 </div>
@@ -1003,26 +1006,26 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-sm">
       <form
         onSubmit={submit}
-        className="w-full max-w-sm rounded-xl border border-slate-800 bg-slate-900 p-5 shadow-elevated"
+        className="w-full max-w-sm rounded-md border border-border-subtle bg-surface-primary p-5 shadow-md"
       >
-        <h3 className="mb-4 text-sm font-semibold text-white">
+        <h3 className="mb-4 text-sm font-semibold text-text-primary">
           {mode === "add" ? "Add New User" : "Edit User"}
         </h3>
 
         <label className="mb-3 block" htmlFor="modal-email">
-          <span className="mb-1 block text-xs font-medium text-slate-300">Email</span>
+          <span className="mb-1 block text-xs font-medium text-text-secondary">Email</span>
           <input
             id="modal-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
+            className="w-full rounded-sm border border-border-subtle bg-surface-secondary px-3 py-1.5 text-xs text-text-primary outline-none focus:border-accent"
           />
         </label>
 
         <label className="mb-3 block" htmlFor="modal-password">
-          <span className="mb-1 block text-xs font-medium text-slate-300">
+          <span className="mb-1 block text-xs font-medium text-text-secondary">
             {mode === "add" ? "Password" : "Set New Password (Hidden for Security)"}
           </span>
           <input
@@ -1032,28 +1035,28 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
             onChange={(e) => setPassword(e.target.value)}
             placeholder={mode === "add" ? "At least 8 characters" : "Leave empty to keep unchanged"}
             autoComplete="new-password"
-            className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
+            className="w-full rounded-sm border border-border-subtle bg-surface-secondary px-3 py-1.5 text-xs text-text-primary outline-none focus:border-accent"
           />
         </label>
 
         <label className="mb-3 block" htmlFor="modal-name">
-          <span className="mb-1 block text-xs font-medium text-slate-300">Name</span>
+          <span className="mb-1 block text-xs font-medium text-text-secondary">Name</span>
           <input
             id="modal-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
+            className="w-full rounded-sm border border-border-subtle bg-surface-secondary px-3 py-1.5 text-xs text-text-primary outline-none focus:border-accent"
           />
         </label>
 
         <label className="mb-4 block" htmlFor="modal-role">
-          <span className="mb-1 block text-xs font-medium text-slate-300">Role</span>
+          <span className="mb-1 block text-xs font-medium text-text-secondary">Role</span>
           <select
             id="modal-role"
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
+            className="w-full rounded-sm border border-border-subtle bg-surface-secondary px-3 py-1.5 text-xs text-text-primary outline-none focus:border-accent"
           >
             <option value="NORMAL">Normal</option>
             <option value="ADMIN">Admin</option>
@@ -1061,7 +1064,7 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
         </label>
 
         {error && (
-          <p role="alert" className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300">
+          <p role="alert" className="mb-3 rounded-sm border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300">
             {error}
           </p>
         )}
@@ -1070,14 +1073,14 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800"
+            className="rounded-sm border border-border-subtle bg-surface-primary px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:bg-surface-secondary"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-blue-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-sm bg-accent px-4 py-1.5 text-xs font-semibold text-text-primary shadow-sm transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? "Saving..." : "Save User"}
           </button>
@@ -1123,16 +1126,16 @@ function CleanDataModal({ onClose, onCleaned, onAuthError }) {
     <div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 backdrop-blur-sm">
       <form
         onSubmit={submit}
-        className="w-full max-w-sm rounded-xl border border-slate-800 bg-slate-900 p-5 shadow-elevated"
+        className="w-full max-w-sm rounded-md border border-border-subtle bg-surface-primary p-5 shadow-md"
       >
         <div className="flex items-center gap-2.5 mb-3">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-rose-500/20 text-rose-400">
+          <div className="grid h-8 w-8 place-items-center rounded-sm bg-rose-500/20 text-error">
             <AlertTriangle className="h-4 w-4" />
           </div>
-          <h3 className="text-sm font-semibold text-white">System Log Clear</h3>
+          <h3 className="text-sm font-semibold text-text-primary">System Log Clear</h3>
         </div>
         
-        <p className="mb-4 text-xs text-slate-400">
+        <p className="mb-4 text-xs text-text-muted">
           Select the data types to permanently clear. This action complies with data retention policies and cannot be undone.
         </p>
 
@@ -1142,9 +1145,9 @@ function CleanDataModal({ onClose, onCleaned, onAuthError }) {
               type="checkbox" 
               checked={cleanLogins} 
               onChange={e => setCleanLogins(e.target.checked)} 
-              className="h-4 w-4 rounded border-slate-700 bg-slate-950 accent-blue-600" 
+              className="h-4 w-4 rounded border-border-subtle bg-surface-secondary accent-blue-600" 
             />
-            <span className="text-xs text-slate-300">Login Events (Total Logins)</span>
+            <span className="text-xs text-text-secondary">Login Events (Total Logins)</span>
           </label>
           
           <label className="flex items-center gap-2.5 cursor-pointer">
@@ -1152,9 +1155,9 @@ function CleanDataModal({ onClose, onCleaned, onAuthError }) {
               type="checkbox" 
               checked={cleanTracking} 
               onChange={e => setCleanTracking(e.target.checked)} 
-              className="h-4 w-4 rounded border-slate-700 bg-slate-950 accent-blue-600" 
+              className="h-4 w-4 rounded border-border-subtle bg-surface-secondary accent-blue-600" 
             />
-            <span className="text-xs text-slate-300">Tracking Records & Submissions</span>
+            <span className="text-xs text-text-secondary">Tracking Records & Submissions</span>
           </label>
 
           <label className="flex items-center gap-2.5 cursor-pointer">
@@ -1162,14 +1165,14 @@ function CleanDataModal({ onClose, onCleaned, onAuthError }) {
               type="checkbox" 
               checked={cleanAuditLogs} 
               onChange={e => setCleanAuditLogs(e.target.checked)} 
-              className="h-4 w-4 rounded border-slate-700 bg-slate-950 accent-blue-600" 
+              className="h-4 w-4 rounded border-border-subtle bg-surface-secondary accent-blue-600" 
             />
-            <span className="text-xs text-slate-300">Audit Logs (System Trail)</span>
+            <span className="text-xs text-text-secondary">Audit Logs (System Trail)</span>
           </label>
         </div>
 
         {error && (
-          <p role="alert" className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300">
+          <p role="alert" className="mb-3 rounded-sm border border-rose-500/30 bg-rose-500/10 px-2.5 py-1.5 text-xs text-rose-300">
             {error}
           </p>
         )}
@@ -1178,14 +1181,14 @@ function CleanDataModal({ onClose, onCleaned, onAuthError }) {
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-800"
+            className="rounded-sm border border-border-subtle bg-surface-primary px-3 py-1.5 text-xs font-medium text-text-secondary transition hover:bg-surface-secondary"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-rose-600 px-4 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-sm bg-rose-600 px-4 py-1.5 text-xs font-semibold text-text-primary shadow-sm transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? "Purging..." : "Purge Data"}
           </button>

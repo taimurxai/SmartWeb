@@ -8,80 +8,72 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // 60% - Background & Surface
-        background: "#0F1117",
-        surface: "#171923",
-        surfaceLight: "#1F2937",
+        text: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+          faint: "var(--text-faint)",
+          tertiary: "var(--text-tertiary)",
+        },
+        surface: {
+          primary: "var(--surface-primary)",
+          secondary: "var(--surface-secondary)",
+        },
+        border: {
+          subtle: "var(--border-subtle)",
+          faint: "var(--border-faint)",
+          DEFAULT: "var(--border-subtle)",
+        },
+        accent: "var(--color-accent)",
+        success: "var(--color-success)",
+        warning: "var(--color-warning)",
+        error: "var(--color-error)",
+        info: "var(--color-info)",
         
-        // 30% - Text, Borders & Secondary
-        textPrimary: "#F9FAFB",
-        textSecondary: "#9CA3AF",
-        border: "#2D3748",
-
-        // 10% - Accent / Primary Color
+        // Backward compat
         primary: {
-          DEFAULT: "#2563EB",
-          hover: "#1D4ED8",
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb', // Main Accent
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-        },
-        
-        // Semantic Colors
-        success: "#10B981",
-        warning: "#F59E0B",
-        error: "#EF4444",
-
-        // Keeping previous colors for backward compatibility
-        slate: {
-          950: "#0a0a0f",
-          900: "#12121a",
-          850: "#161722",
-          800: "#1e1f2e",
-          700: "#2a2b3d",
-          600: "#475569",
-        },
-        brand: {
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
-          700: "#4338ca",
-        },
+          DEFAULT: "var(--color-accent)",
+          600: "var(--color-accent)",
+        }
       },
       fontSize: {
-        // Enterprise Typography Scale (Base 14px)
-        'ent-caption': ['12px', { lineHeight: '1.5', fontWeight: '500' }],
-        'ent-sub': ['13px', { lineHeight: '1.5', fontWeight: '400' }],
-        'ent-body': ['14px', { lineHeight: '1.5', fontWeight: '400' }], // Standard Base
-        'ent-h3': ['16px', { lineHeight: '1.3', fontWeight: '500' }],
-        'ent-h2': ['18px', { lineHeight: '1.2', fontWeight: '500' }],
-        'ent-h1': ['24px', { lineHeight: '1.2', fontWeight: '600' }],
+        'hero': ['var(--text-hero)', { lineHeight: '1', fontWeight: '500', letterSpacing: '-0.6px' }],
+        'h2': ['var(--text-h2)', { lineHeight: '40px', fontWeight: '500', letterSpacing: '-0.36px' }],
+        'h3': ['var(--text-h3)', { lineHeight: '36px', fontWeight: '500', letterSpacing: '-0.3px' }],
+        'body': ['var(--text-body)', { lineHeight: '26px', fontWeight: '400' }],
+        'small': ['var(--text-small)', { lineHeight: '19.5px', fontWeight: '400' }],
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
-        display: ["var(--font-outfit)", "ui-sans-serif", "system-ui", "sans-serif"],
-        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
+        sans: ["var(--font-family-primary)", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
+        display: ["var(--font-family-primary)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
-      boxShadow: {
-        subtle: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-        card: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
-        elevated: "0 12px 36px -4px rgba(0, 0, 0, 0.6)",
-        glow: "0 0 25px -5px rgba(37, 99, 235, 0.25)", // Updated to primary blue
+      spacing: {
+        xs: 'var(--spacing-xs)',
+        sm: 'var(--spacing-sm)',
+        md: 'var(--spacing-md)',
+        lg: 'var(--spacing-lg)',
+        xl: 'var(--spacing-xl)',
+        '2xl': 'var(--spacing-2xl)',
+      },
+      borderRadius: {
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        pill: 'var(--radius-pill)',
+      },
+      transitionDuration: {
+        fast: 'var(--transition-fast)',
+        default: 'var(--transition-default)',
+      },
+      transitionTimingFunction: {
+        standard: 'var(--ease-standard)',
       },
       animation: {
-        'fade-in': 'fadeIn 0.25s ease-out forwards',
-        'fade-in-up': 'fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'fade-in': 'fadeIn var(--transition-default) var(--ease-standard) forwards',
+        'fade-in-up': 'fadeInUp var(--transition-default) var(--ease-standard) forwards',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'shimmer': 'shimmer 2s infinite linear',
+        'blob': 'blob 7s infinite',
+        'float': 'float 6s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -89,13 +81,24 @@ module.exports = {
           '100%': { opacity: '1' },
         },
         fadeInUp: {
-          '0%': { opacity: '0', transform: 'translateY(8px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
+          '0%': { opacity: '0', transform: 'translate3d(0, 16px, 0)' },
+          '100%': { opacity: '1', transform: 'translate3d(0, 0, 0)' },
         },
         shimmer: {
           '0%': { transform: 'translateX(-100%)' },
           '100%': { transform: 'translateX(100%)' },
         },
+        blob: {
+          '0%': { transform: 'translate(0px, 0px) scale(1)' },
+          '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
+          '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
+          '100%': { transform: 'translate(0px, 0px) scale(1)' },
+        },
+        float: {
+          '0%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+          '100%': { transform: 'translateY(0px)' },
+        }
       }
     },
   },
