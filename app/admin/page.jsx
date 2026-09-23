@@ -1009,17 +1009,6 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
           {mode === "add" ? "Add New User" : "Edit User"}
         </h3>
 
-        <label className="mb-3 block" htmlFor="modal-name">
-          <span className="mb-1 block text-xs font-medium text-slate-300">Name</span>
-          <input
-            id="modal-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
-          />
-        </label>
-
         <label className="mb-3 block" htmlFor="modal-email">
           <span className="mb-1 block text-xs font-medium text-slate-300">Email</span>
           <input
@@ -1032,22 +1021,9 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
           />
         </label>
 
-        <label className="mb-3 block" htmlFor="modal-role">
-          <span className="mb-1 block text-xs font-medium text-slate-300">Role</span>
-          <select
-            id="modal-role"
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
-            className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
-          >
-            <option value="NORMAL">Normal</option>
-            <option value="ADMIN">Admin</option>
-          </select>
-        </label>
-
-        <label className="mb-4 block" htmlFor="modal-password">
+        <label className="mb-3 block" htmlFor="modal-password">
           <span className="mb-1 block text-xs font-medium text-slate-300">
-            {mode === "add" ? "Password" : "New Password (Optional)"}
+            {mode === "add" ? "Password" : "Set New Password (Hidden for Security)"}
           </span>
           <input
             id="modal-password"
@@ -1058,6 +1034,30 @@ function UserModal({ mode, user, onClose, onSaved, onAuthError }) {
             autoComplete="new-password"
             className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
           />
+        </label>
+
+        <label className="mb-3 block" htmlFor="modal-name">
+          <span className="mb-1 block text-xs font-medium text-slate-300">Name</span>
+          <input
+            id="modal-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
+          />
+        </label>
+
+        <label className="mb-4 block" htmlFor="modal-role">
+          <span className="mb-1 block text-xs font-medium text-slate-300">Role</span>
+          <select
+            id="modal-role"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="w-full rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-1.5 text-xs text-white outline-none focus:border-blue-500/60"
+          >
+            <option value="NORMAL">Normal</option>
+            <option value="ADMIN">Admin</option>
+          </select>
         </label>
 
         {error && (
