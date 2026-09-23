@@ -8,10 +8,38 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#0a0a0f",
-        surface: "#12121a",
-        surfaceLight: "#1a1b26",
-        border: "#2a2b3d",
+        // 60% - Background & Surface
+        background: "#0F1117",
+        surface: "#171923",
+        surfaceLight: "#1F2937",
+        
+        // 30% - Text, Borders & Secondary
+        textPrimary: "#F9FAFB",
+        textSecondary: "#9CA3AF",
+        border: "#2D3748",
+
+        // 10% - Accent / Primary Color
+        primary: {
+          DEFAULT: "#2563EB",
+          hover: "#1D4ED8",
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6',
+          600: '#2563eb', // Main Accent
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+        },
+        
+        // Semantic Colors
+        success: "#10B981",
+        warning: "#F59E0B",
+        error: "#EF4444",
+
+        // Keeping previous colors for backward compatibility
         slate: {
           950: "#0a0a0f",
           900: "#12121a",
@@ -29,6 +57,15 @@ module.exports = {
           700: "#4338ca",
         },
       },
+      fontSize: {
+        // Enterprise Typography Scale (Base 14px)
+        'ent-caption': ['12px', { lineHeight: '1.5', fontWeight: '500' }],
+        'ent-sub': ['13px', { lineHeight: '1.5', fontWeight: '400' }],
+        'ent-body': ['14px', { lineHeight: '1.5', fontWeight: '400' }], // Standard Base
+        'ent-h3': ['16px', { lineHeight: '1.3', fontWeight: '500' }],
+        'ent-h2': ['18px', { lineHeight: '1.2', fontWeight: '500' }],
+        'ent-h1': ['24px', { lineHeight: '1.2', fontWeight: '600' }],
+      },
       fontFamily: {
         sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
         display: ["var(--font-outfit)", "ui-sans-serif", "system-ui", "sans-serif"],
@@ -38,7 +75,7 @@ module.exports = {
         subtle: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
         card: "0 8px 32px 0 rgba(0, 0, 0, 0.3)",
         elevated: "0 12px 36px -4px rgba(0, 0, 0, 0.6)",
-        glow: "0 0 25px -5px rgba(99, 102, 241, 0.25)",
+        glow: "0 0 25px -5px rgba(37, 99, 235, 0.25)", // Updated to primary blue
       },
       animation: {
         'fade-in': 'fadeIn 0.25s ease-out forwards',
